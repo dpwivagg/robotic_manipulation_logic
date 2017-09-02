@@ -53,7 +53,7 @@ range = 400.0;
      %  empty
      
      pause(0.1) %timeit(returnValues)
-     csvwrite(csv, returnValues);
+     dlmwrite(csv, transpose(returnValues), '-append');
  end
 pp.shutdown()
 clear java;
