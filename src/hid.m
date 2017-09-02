@@ -8,6 +8,7 @@ import java.lang.*;
 
 
 pp = PacketProcessor(7);
+csv = 'values.csv';
 
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
@@ -18,7 +19,7 @@ range = 400.0;
  for k=1:sinWaveInc
      incremtal = (single(k) / sinWaveInc);
      for j=0:4
-         %Send a new setpoint based on a since wave
+         %Send a new setpoint based on a sine wave
          values((j * 3) + 1) = (sin(incremtal * pi *2.0 )*range)+(range);
          %Send junk data for velocity and force targets
          values((j * 3) + 2) = 0;
@@ -32,7 +33,27 @@ range = 400.0;
      disp(values);
      disp('got');
      disp(returnValues);
+     
+     % Byte Array Structure: 64 bytes
+     %  4-byte command identifier
+     %  Link 0 Position
+     %  Link 0 Velocity
+     %  Link 0 Torque
+     %  Link 1 Position
+     %  Link 1 Velocity
+     %  Link 1 Torque
+     %  Link 2 Position
+     %  Link 2 Velocity
+     %  Link 2 Torque
+     %  empty
+     %  empty
+     %  empty
+     %  empty
+     %  empty
+     %  empty
+     
      pause(0.1) %timeit(returnValues)
+     csvwrite(csv, returnValues);
  end
 pp.shutdown()
 clear java;
