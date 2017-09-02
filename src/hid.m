@@ -26,7 +26,7 @@ range = 400.0;
      end
      tic
      %Process command and print the returning values
-     returnValues = pp.command(37, values);
+     returnValues = pp.command(38, values);
      toc
      disp('sent');
      disp(values);
