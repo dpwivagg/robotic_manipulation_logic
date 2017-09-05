@@ -71,7 +71,7 @@ createPlot;
      %  empty
      %  empty
      %  empty
-
+     
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
      val = returnValues(1) / 12;

@@ -1,7 +1,7 @@
 function createPlot
 %% Create a figure environment
 % Open a figure environment
-figure();
+%figure();
 % Add axes to the figure
 axes;
 % Hold on to objects in the axes
