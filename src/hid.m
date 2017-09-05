@@ -36,7 +36,7 @@ for k=1:40
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-     values(1) = 300;
+     values(1) = 700;
      values(2) = 400;
      values(3) = 200;
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
