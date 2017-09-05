@@ -1,3 +1,7 @@
+% created by Daniel Wivagg
+% for sending PID control command packets
+% step 9 in Lab 1
+
 javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
@@ -12,7 +16,7 @@ csv = 'values.csv';
 
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
-values = zeros(15, 1, 'single');
+values = zeros(16, 1, 'single');
 sinWaveInc = 10.0;
 range = 400.0;
 
@@ -27,6 +31,10 @@ range = 400.0;
          values((j * 3) + 2) = 0;
          values((j * 3) + 3) = 3;
      end
+     
+     % Set the PID control command byte
+     values(16) = 14;
+     
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);

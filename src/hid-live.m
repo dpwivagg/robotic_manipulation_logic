@@ -1,3 +1,7 @@
+% created by Daniel Wivagg
+% for updating hid.m to generate live plots
+% step 8 in Lab 1
+
 javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
@@ -16,10 +20,12 @@ values = zeros(15, 1, 'single');
 sinWaveInc = 10.0;
 range = 400.0;
 
+% Function call to create plot
+% createPlot;
+% compass(0,0);
 
 %Iterate through a sine wave for joint values
- for k=1:sinWaveInc
-     incremtal = (single(k) / sinWaveInc);
+ while 1
      for j=0:4
          %Send a new setpoint based on a sine wave
          values((j * 3) + 1) = (sin(incremtal * pi *2.0 )*range)+(range);
@@ -53,6 +59,12 @@ range = 400.0;
      %  empty
      %  empty
      %  empty
+     
+     val = returnValues(1) / 12;
+     X = cos(val);
+     Y = sin(val);
+     
+     compass(X,Y);
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');
