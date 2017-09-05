@@ -82,7 +82,7 @@ for k=1:40
      val = 0 - (returnValues(1) / 12);
      dlmwrite('angles.csv',val,'-append','delimiter',' ')
      linkPlot(val);
-     pause(0.25);
+     %pause(0.25);
  end
 pp.shutdown()
 clear java;
