@@ -18,7 +18,11 @@ range = 400.0;
 
 createPlot;
 
- for k=1:sinWaveInc
+
+
+% This loop runs for 10 seconds and iterates 40 times
+for k=1:40
+% for k=1:sinWaveInc
 %      % create PID Control Command Packet
 %      for j=0:4
 %          %Send a new setpoint for joint 0 in raw encoder ticks
@@ -74,12 +78,20 @@ createPlot;
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
-     val = returnValues(1) / 12;
+     val = 0 - (returnValues(1) / 12);
+     dlmwrite('angles.csv',val,'-append','delimiter',' ')
      linkPlot(val);
-     pause(1);
+     pause(0.25);
  end
 pp.shutdown()
 clear java;
+
+% Read in the angles from the CSV file and plot them
+a = csvread('angles.csv');
+% must generate a vector of time values, every quarter of a second
+t = linspace(0, 10, 40);
+plot(t, a);
+
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
 % %All Arms
