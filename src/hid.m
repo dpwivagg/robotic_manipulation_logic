@@ -36,7 +36,7 @@ for k=1:40
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-     values(1) = 700;
+     values(1) = -300;
      values(2) = 400;
      values(3) = 200;
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
@@ -86,12 +86,22 @@ for k=1:40
  end
 pp.shutdown()
 clear java;
+% Clear the live link plot
+clf
 
 % Read in the angles from the CSV file and plot them
 a = csvread('angles.csv');
 % must generate a vector of time values, every quarter of a second
 t = linspace(0, 10, 40);
-plot(t, a);
+
+% Create a plot for the position of the link over time
+axes;                   % Add axes to the figure
+hold on;                % Hold on to objects in the axes
+box on;                 % Put a box around axes
+grid on;                % Put gridlines on the figure
+axis([0 10 -180 180]);  % Set axes limits
+title({'Angle of link over time'}); % Add title to the figure
+plot(t, a);             % Plot the position of the arm over time
 
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
