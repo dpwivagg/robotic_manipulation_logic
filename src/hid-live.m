@@ -21,8 +21,7 @@ sinWaveInc = 10.0;
 range = 400.0;
 
 % Function call to create plot
-% createPlot;
-% compass(0,0);
+createPlot;
 
 %Iterate through a sine wave for joint values
  while 1
@@ -61,14 +60,12 @@ range = 400.0;
      %  empty
      
      val = returnValues(1) / 12;
-     X = cos(val);
-     Y = sin(val);
      
-     compass(X,Y);
+     linkPlot(val);
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');
-     
+     pause(1);
  end
 pp.shutdown()
 clear java;
