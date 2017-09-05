@@ -16,17 +16,35 @@ values = zeros(15, 1, 'single');
 sinWaveInc = 10.0;
 range = 400.0;
 
+createPlot;
 
-%Iterate through a sine wave for joint values
  for k=1:sinWaveInc
-     incremtal = (single(k) / sinWaveInc);
-     for j=0:4
-         %Send a new setpoint based on a sine wave
-         values((j * 3) + 1) = (sin(incremtal * pi *2.0 )*range)+(range);
-         %Send junk data for velocity and force targets
-         values((j * 3) + 2) = 0;
-         values((j * 3) + 3) = 3;
-     end
+%      % create PID Control Command Packet
+%      for j=0:4
+%          %Send a new setpoint for joint 0 in raw encoder ticks
+%          values((j * 3) + 1) = 350;
+%          %Send junk data for joint 1 and 2 in raw encoder ticks
+%          % (was previously velocity and torque setpoints)
+%          values((j * 3) + 2) = 150;
+%          values((j * 3) + 3) = 300;
+%      end
+     %Create PID control command packet:
+     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+     % torque targets
+     values(1) = 350;
+     values(2) = 400;
+     values(3) = 200;
+     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+     % torque targets
+     values(4) = 300;
+     values(5) = 450;
+     values(6) = 230;
+     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+     % torque targets
+     values(7) = 100;
+     values(8) = 800;
+     values(9) = 150;
+     
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -53,10 +71,12 @@ range = 400.0;
      %  empty
      %  empty
      %  empty
-     linkPlot(val);
-     pause(0.1) %timeit(returnValues)
-     dlmwrite(csv, transpose(returnValues), '-append');
      
+     pause(0.1) %timeit(returnValues)
+     dlmwrite(csv, transpose(returnValues), '-append');     
+     val = returnValues(1) / 12;
+     linkPlot(val);
+     pause(1);
  end
 pp.shutdown()
 clear java;
