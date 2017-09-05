@@ -15,6 +15,10 @@ csv = 'values.csv';
 values = zeros(15, 1, 'single');
 sinWaveInc = 10.0;
 range = 400.0;
+
+% Function call to create plot
+% createPlot;
+
 %Iterate through a sine wave for joint values
  for k=1:sinWaveInc
      incremtal = (single(k) / sinWaveInc);
@@ -52,8 +56,15 @@ range = 400.0;
      %  empty
      %  empty
      
+     val = returnValues(1) / 11;
+     X = cos(val);
+     Y = sin(val);
+     
+     plot(X,Y,'o');
+     
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');
+     
  end
 pp.shutdown()
 clear java;
