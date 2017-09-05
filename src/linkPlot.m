@@ -2,15 +2,15 @@
 % plots the position of the link
 function linkPlot(q)
 
-% Convert from degrees to radians
-q = q * 0.017;
-
 % Calculate cartesian coordinates for link
-X = cos(q);
-Y = sin(q);
+X = cosd(q);
+Y = sind(q);
+
+% Clear the figure
+clf
 
 % Plot the link
-plot(X,Y,'LineWidth',2,'MarkerSize',3);
+plotv(X,Y,'-o');
 
 % Update the plot
 drawnow;

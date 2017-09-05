@@ -53,7 +53,7 @@ range = 400.0;
      %  empty
      %  empty
      %  empty
-     
+     linkPlot(val);
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');
      
