@@ -18,7 +18,8 @@ range = 400.0;
 
 createPlot;
 
-
+% we need a fresh list of angles every time, or else the plot will not work
+delete 'angles.csv';
 
 % This loop runs for 10 seconds and iterates 40 times
 for k=1:40
