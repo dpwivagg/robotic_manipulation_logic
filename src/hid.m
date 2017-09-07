@@ -18,7 +18,12 @@ range = 400.0;
 
 createPlot;
 
- for k=1:sinWaveInc
+% we need a fresh list of angles every time, or else the plot will not work
+delete 'angles.csv';
+
+% This loop runs for 10 seconds and iterates 40 times
+for k=1:40
+% for k=1:sinWaveInc
 %      % create PID Control Command Packet
 %      for j=0:4
 %          %Send a new setpoint for joint 0 in raw encoder ticks
@@ -31,7 +36,7 @@ createPlot;
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-     values(1) = 350;
+     values(1) = -300;
      values(2) = 400;
      values(3) = 200;
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
@@ -74,12 +79,30 @@ createPlot;
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
-     val = returnValues(1) / 12;
+     val = 0 - (returnValues(1) / 12);
+     dlmwrite('angles.csv',val,'-append','delimiter',' ')
      linkPlot(val);
-     pause(1);
+     %pause(0.25);
  end
 pp.shutdown()
 clear java;
+% Clear the live link plot
+clf
+
+% Read in the angles from the CSV file and plot them
+a = csvread('angles.csv');
+% must generate a vector of time values, every quarter of a second
+t = linspace(0, 10, 40);
+
+% Create a plot for the position of the link over time
+axes;                   % Add axes to the figure
+hold on;                % Hold on to objects in the axes
+box on;                 % Put a box around axes
+grid on;                % Put gridlines on the figure
+axis([0 10 -180 180]);  % Set axes limits
+title({'Angle of link over time'}); % Add title to the figure
+plot(t, a);             % Plot the position of the arm over time
+
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
 % %All Arms
