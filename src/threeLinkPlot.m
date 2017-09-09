@@ -1,19 +1,6 @@
 function threeLinkPlot(q0, q1, q2)
 
-% % Add axes to the figure
-% axes;
-% % Hold on to objects in the axes
-% hold on;
-% % Lock aspect ratios equal
-% axis equal;
-% % Put a box around axes
-% box on;
-% % Put gridlines on the figure
-% grid on;
-% % Set axes limits
-% %axis(2*[-1 1 -1 1]);
-% % Add title to the figure
-% title({'Live position of 3-link-arm'});
+
 
 l1 = 1;
 l2 = 1;
@@ -41,4 +28,20 @@ z3 = [v2(3) v3(3)];
 
 
 plot3(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+% Hold on to objects in the axes
+hold on;
+% Lock aspect ratios equal
+axis equal;
+% % Put a box around axes
+box on;
+% % Put gridlines on the figure
+grid on;
+% % Set axes limits
+axis(2*[-1 1 -1 1 0 1]);
+% Add title to the figure
+xlabel('X');
+ylabel('Y');
+zlabel('Z');
+title({'Live position of 3-link-arm'});
+
 end

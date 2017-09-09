@@ -13,8 +13,6 @@ csv = 'values.csv';
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
-sinWaveInc = 10.0;
-range = 400.0;
 
 createPlot;
 
@@ -23,20 +21,10 @@ delete 'angles.csv';
 
 % This loop runs for 10 seconds and iterates 40 times
 for k=1:40
-% for k=1:sinWaveInc
-%      % create PID Control Command Packet
-%      for j=0:4
-%          %Send a new setpoint for joint 0 in raw encoder ticks
-%          values((j * 3) + 1) = 350;
-%          %Send junk data for joint 1 and 2 in raw encoder ticks
-%          % (was previously velocity and torque setpoints)
-%          values((j * 3) + 2) = 150;
-%          values((j * 3) + 3) = 300;
-%      end
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-     values(1) = -300;
+     values(1) = -350;
      values(2) = 400;
      values(3) = 200;
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
@@ -79,9 +67,11 @@ for k=1:40
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
-     val = 0 - (returnValues(1) / 12);
-     dlmwrite('angles.csv',val,'-append','delimiter',' ')
-     linkPlot(val);
+     q0 = 0 - (returnValues(1) / 12);
+     q1 = 0 - (returnValues(4) / 12);
+     q2 = 0 - (returnValues(7) / 12);
+%      dlmwrite('angles.csv',val,'-append','delimiter',' ')
+     threeLinkPlot(q0, q1, q2);
      %pause(0.25);
  end
 pp.shutdown()
@@ -90,19 +80,20 @@ clear java;
 clf
 
 % Read in the angles from the CSV file and plot them
-a = csvread('angles.csv');
+% a = csvread('angles.csv');
 % must generate a vector of time values, every quarter of a second
-t = linspace(0, 10, 40);
+% t = linspace(0, 10, 40);
 
 % Create a plot for the position of the link over time
-axes;                   % Add axes to the figure
-hold on;                % Hold on to objects in the axes
-box on;                 % Put a box around axes
-grid on;                % Put gridlines on the figure
-axis([0 10 -180 180]);  % Set axes limits
-title({'Angle of link over time'}); % Add title to the figure
-plot(t, a);             % Plot the position of the arm over time
+% axes;                   % Add axes to the figure
+% hold on;                % Hold on to objects in the axes
+% box on;                 % Put a box around axes
+% grid on;                % Put gridlines on the figure
+% axis([0 10 -180 180]);  % Set axes limits
+% title({'Angle of link over time'}); % Add title to the figure
+% plot(t, a);             % Plot the position of the arm over time
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
 % %All Arms
