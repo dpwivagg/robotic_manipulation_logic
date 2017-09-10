@@ -1,7 +1,5 @@
 function threeLinkPlot(q0, q1, q2)
 
-
-
 l1 = 1;
 l2 = 1;
 l3 = 1;
@@ -21,7 +19,7 @@ x2 = [v1(1) v2(1)];
 y2 = [v1(2) v2(2)];
 z2 = [v1(3) v2(3)];
 
-v3 = pCoordinate(q0, q1, q2);
+v3 = pCoordinate(q0, q1, (q2 + 90));
 x3 = [v2(1) v3(1)];
 y3 = [v2(2) v3(2)];
 z3 = [v2(3) v3(3)];

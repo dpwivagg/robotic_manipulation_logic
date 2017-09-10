@@ -27,14 +27,14 @@ for k=1:40
      values(1) = -350;
      values(2) = 400;
      values(3) = 200;
-     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+     % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
      % torque targets
      values(4) = 300;
      values(5) = 450;
      values(6) = 230;
-     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+     % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
-     values(7) = 100;
+     values(7) = 1100;
      values(8) = 800;
      values(9) = 150;
      
