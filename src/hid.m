@@ -17,10 +17,10 @@ values = zeros(15, 1, 'single');
 createPlot;
 
 % we need a fresh list of angles every time, or else the plot will not work
-% delete 'angles.csv';
+delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv';
 
 % This loop runs for 10 seconds and iterates 40 times
-for k=1:40
+ for k=1:40
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
@@ -29,12 +29,12 @@ for k=1:40
      values(3) = 200;
      % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
      % torque targets
-     values(4) = 300;
+     values(4) = 750;
      values(5) = 450;
      values(6) = 230;
      % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
-     values(7) = 1000;
+     values(7) = 850;
      values(8) = 800;
      values(9) = 150;
      
@@ -67,34 +67,65 @@ for k=1:40
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
+     
+     % Take encoder ticks and translate to degrees
      q0 = 0 - (returnValues(1) / 12);
      q1 = (returnValues(4) / 12);
      q2 = 0 - (returnValues(7) / 12);
-%      dlmwrite('angles.csv',val,'-append','delimiter',' ')
+     
+     % Calculate the position of the tool tip
+     posToolTip = pCoordinate(q0, q1, (q2 + 90));
+     
+     dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
+     dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
+     dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
 
      % Clear the live link plot
      clf;
      threeLinkPlot(q0, q1, q2);
      %pause(0.25);
  end
+ 
 pp.shutdown()
 clear java;
 
 % Read in the angles from the CSV file and plot them
-% a = csvread('angles.csv');
-% must generate a vector of time values, every quarter of a second
-% t = linspace(0, 10, 40);
+xpos = csvread('xpos.csv');
+ypos = csvread('ypos.csv');
+zpos = csvread('zpos.csv');
 
-% Create a plot for the position of the link over time
-% axes;                   % Add axes to the figure
-% hold on;                % Hold on to objects in the axes
-% box on;                 % Put a box around axes
-% grid on;                % Put gridlines on the figure
-% axis([0 10 -180 180]);  % Set axes limits
-% title({'Angle of link over time'}); % Add title to the figure
-% plot(t, a);             % Plot the position of the arm over time
+%% Create circles showing range of arm
+% Create a circle showing the range of the arm
+theta = 0:pi/50:2*pi;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For the xy plane starting at the shoulder
+xyplane.x = 2 * cos(theta);
+xyplane.y = 2 * sin(theta);
+xyplane.z = ones(1,numel(xyplane.x));
+
+% For the xz plane starting at the shoulder
+xzplane.x = 2 * cos(theta);
+xzplane.y = zeros(1,numel(xzplane.x));
+xzplane.z = 2 * sin(theta) + 1;
+
+% For the yz plane starting at the shoulder
+yzplane.x = zeros(1,numel(xzplane.x));
+yzplane.y = 2 * cos(theta);
+yzplane.z = 2 * sin(theta) + 1;
+
+%% Create a plot for the position of the link over time
+clf;
+plot3(xpos, ypos, zpos,...
+      xyplane.x, xyplane.y, xyplane.z, 'k:',...
+      xzplane.x, xzplane.y, xzplane.z, 'k:',...
+      yzplane.x, yzplane.y, yzplane.z, 'k:');   % Plot the position of the arm over time
+hold on;                   % Hold on to objects in the axes
+box on;                    % Put a box around axes
+grid on;                   % Put gridlines on the figure
+axis([-2 2 -2 2 0 3]);     % Set axes limits
+title({'Angle of link over time'}); % Add title to the figure
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
 % %All Arms
