@@ -34,7 +34,7 @@ for k=1:40
      values(6) = 230;
      % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
-     values(7) = 1100;
+     values(7) = 1000;
      values(8) = 800;
      values(9) = 150;
      
