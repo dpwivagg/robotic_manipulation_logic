@@ -17,7 +17,7 @@ values = zeros(15, 1, 'single');
 createPlot;
 
 % we need a fresh list of angles every time, or else the plot will not work
-delete 'angles.csv';
+% delete 'angles.csv';
 
 % This loop runs for 10 seconds and iterates 40 times
 for k=1:40
@@ -68,16 +68,17 @@ for k=1:40
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
      q0 = 0 - (returnValues(1) / 12);
-     q1 = 0 - (returnValues(4) / 12);
+     q1 = (returnValues(4) / 12);
      q2 = 0 - (returnValues(7) / 12);
 %      dlmwrite('angles.csv',val,'-append','delimiter',' ')
+
+     % Clear the live link plot
+     clf;
      threeLinkPlot(q0, q1, q2);
      %pause(0.25);
  end
 pp.shutdown()
 clear java;
-% Clear the live link plot
-clf
 
 % Read in the angles from the CSV file and plot them
 % a = csvread('angles.csv');
