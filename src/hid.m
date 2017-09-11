@@ -12,34 +12,37 @@ csv = 'values.csv';
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
-point1 = [0, 0, 0, 600, 0, 0, 425, 0, 0];
-point2 = [0; 0; 0; 290; 0; 0; 1050; 0; 0];
-point3 = [0; 0; 0; 760; 0; 0; 860; 0; 0];
+setpointReached = false;
 
 createPlot;
 
 % we need a fresh list of angles every time, or else the plot will not work
-delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv';
+delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv'; 
+delete 'values.csv';
 
 % This loop runs for 10 seconds and iterates 40 times
- for k=1:40
+% A while loop would be required for lines 88-91
+% while setpointReached==false
+for k=1:40
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-    values(1) = 300;
-     values(2) = 400;
-     values(3) = 200;
+     % Position ranges from -980 to 1250
+     values(1) = 0;
+     values(2) = 0;
+     values(3) = 0;
      % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
      % torque targets
-    values(4) = 600;
-     values(5) = 450;
-     values(6) = 230;
+     % Position ranges from -200 to 1000
+     values(4) = 0;
+     values(5) = 0;
+     values(6) = 0;
      % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
-    values(7) = 774;
-     values(8) = 800;
-     values(9) = 150;
-%      values = point1;
+     % Position ranges from -330 to 2400
+     values(7) = 0;
+     values(8) = 0;
+     values(9) = 0;
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -85,7 +88,11 @@ delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv';
      % Clear the live link plot
      clf;
      threeLinkPlot(q0, q1, q2);
-     %pause(0.25);
+%      This is some potential code for stopping the robot once it reaches
+%      the setpoint
+%      if(abs(returnValues(2)) < 500 && abs(returnValues(5)) < 500  && abs(returnValues(8)) < 500)
+%          setpointReached = true;
+%      end
  end
  
 pp.shutdown()
