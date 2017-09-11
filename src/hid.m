@@ -6,13 +6,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.lang.*;
 
-
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
+point1 = [0, 0, 0, 600, 0, 0, 425, 0, 0];
+point2 = [0; 0; 0; 290; 0; 0; 1050; 0; 0];
+point3 = [0; 0; 0; 760; 0; 0; 860; 0; 0];
 
 createPlot;
 
@@ -24,20 +26,20 @@ delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv';
      %Create PID control command packet:
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
-     values(1) = -350;
+    values(1) = 0;
      values(2) = 400;
      values(3) = 200;
      % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
      % torque targets
-     values(4) = 750;
+    values(4) = 600;
      values(5) = 450;
      values(6) = 230;
      % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
-     values(7) = 850;
+    values(7) = 774;
      values(8) = 800;
      values(9) = 150;
-     
+%      values = point1;
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
