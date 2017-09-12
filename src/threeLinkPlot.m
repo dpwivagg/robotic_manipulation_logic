@@ -1,31 +1,27 @@
-% Function threeLinkPlot takes three angles and calculates the position
+% Function threeLinkPlot takes the lengths of link 1 and 2,
+% and the position of the elbow and tool tip to calculate the position
 % of a 3-DOF arm with link lengths defined below.
 
 % This function require function pCoordinate.m
-function threeLinkPlot(q0, q1, q2)
-
-% Lengths of one for each link
-l1 = 1;
-l2 = 1;
-l3 = 1;
+function threeLinkPlot(l1, l2, v2, v3)
 
 % Origin
 v0 = [0 0 0];
 
 % First link
-v1 = [0 0 1]
+v1 = [0 0 1];
 x1 = [v0(1) v1(1)];
 y1 = [v0(2) v1(2)];
 z1 = [v0(3) v1(3)];
 
 % Second link
-v2 = [(l2 * cosd(q1) * cosd(q0)) (l2 * cosd(q1) * sind(q0)) (l1 + l2 * sind(q1))];
+%v2 = [(l2 * cosd(q1) * cosd(q0)) (l2 * cosd(q1) * sind(q0)) (l1 + l2 * sind(q1))];
 x2 = [v1(1) v2(1)];
 y2 = [v1(2) v2(2)];
 z2 = [v1(3) v2(3)];
 
 % Third link
-v3 = pCoordinate(q0, q1, (q2 + 90));
+%v3 = pCoordinate(q0, q1, (q2 + 90));
 x3 = [v2(1) v3(1)];
 y3 = [v2(2) v3(2)];
 z3 = [v2(3) v3(3)];
@@ -66,10 +62,8 @@ box on;
 grid on;
 % % Set axes limits
 axis([-2 2 -2 2 0 3]);
-% Add title to the figure
-xlabel('X');
-ylabel('Y');
-zlabel('Z');
+% Add title and axes to the figure
+xlabel('X'); ylabel('Y'); zlabel('Z');
 title({'Live position of 3-link-arm'});
-
+view(37.5, 30);            % Rotate the plot to 'face forward'
 end

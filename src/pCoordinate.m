@@ -1,10 +1,6 @@
-% Function pCoordinate accepts three angles and returns 
-% the x, y, z positon of the tip as a 3x1 matrix
-function p = pCoordinate(q0, q1, q2)
-% Lengths of link 1, 2, and 3 
-l1 = 1;
-l2 = 1;
-l3 = 1;
+% Function pCoordinate accepts three angles and the link lengths
+% and returns the x, y, z positon of the tip as a 3x1 matrix
+function p = pCoordinate(l1, l2, l3, q0, q1, q2)
 
 % Calculate the value of x
 pX0 = cosd(q0) * (l2 * cosd(q1) + l3 * cosd(q1 - q2));

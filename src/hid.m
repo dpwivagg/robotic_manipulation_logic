@@ -9,6 +9,11 @@ import java.lang.*;
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
+% Set values for the lengths of link 1, 2, and 3
+l1 = 1;
+l2 = 1;
+l3 = 1;
+
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
@@ -79,7 +84,7 @@ for k=1:40
      q2 = 0 - (returnValues(7) / 12);
      
      % Calculate the position of the tool tip
-     posToolTip = pCoordinate(q0, q1, (q2 + 90));
+     posToolTip = pCoordinate(l1, l2, l3, q0, q1, (q2 + 90));
      
      dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
      dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
@@ -87,7 +92,9 @@ for k=1:40
 
      % Clear the live link plot
      clf;
-     threeLinkPlot(q0, q1, q2);
+     threeLinkPlot(l1, l2,...
+                   eCoordinate(l1, l2, q0, q1),...
+                   pCoordinate(l1, l2, l3, q0, q1, (q2 + 90)));
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
 %      if(abs(returnValues(2)) < 500 && abs(returnValues(5)) < 500  && abs(returnValues(8)) < 500)
@@ -103,37 +110,7 @@ xpos = csvread('xpos.csv');
 ypos = csvread('ypos.csv');
 zpos = csvread('zpos.csv');
 
-%% Create circles showing range of arm
-% Create a circle showing the range of the arm
-theta = 0:pi/50:2*pi;
-
-% For the xy plane starting at the shoulder
-xyplane.x = 2 * cos(theta);
-xyplane.y = 2 * sin(theta);
-xyplane.z = ones(1,numel(xyplane.x));
-
-% For the xz plane starting at the shoulder
-xzplane.x = 2 * cos(theta);
-xzplane.y = zeros(1,numel(xzplane.x));
-xzplane.z = 2 * sin(theta) + 1;
-
-% For the yz plane starting at the shoulder
-yzplane.x = zeros(1,numel(xzplane.x));
-yzplane.y = 2 * cos(theta);
-yzplane.z = 2 * sin(theta) + 1;
-
-%% Create a plot for the position of the link over time
-clf;
-plot3(xpos, ypos, zpos,...
-      xyplane.x, xyplane.y, xyplane.z, 'k:',...
-      xzplane.x, xzplane.y, xzplane.z, 'k:',...
-      yzplane.x, yzplane.y, yzplane.z, 'k:');   % Plot the position of the arm over time
-hold on;                   % Hold on to objects in the axes
-box on;                    % Put a box around axes
-grid on;                   % Put gridlines on the figure
-axis([-2 2 -2 2 0 3]);     % Set axes limits
-title({'Angle of link over time'}); % Add title to the figure
-
+pathPlot(xpos, ypos, zpos);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
