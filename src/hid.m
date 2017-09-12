@@ -83,18 +83,22 @@ for k=1:40
      q1 = (returnValues(4) / 12);
      q2 = 0 - (returnValues(7) / 12);
      
+     % Calculate the position of the elbow
+     posElbow = eCoordinate(l1, l2, q0, q1);
      % Calculate the position of the tool tip
      posToolTip = pCoordinate(l1, l2, l3, q0, q1, (q2 + 90));
      
-     dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
-     dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
-     dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
+     dlmwrite('tipPos.csv',posToolTip(1),'-append','delimiter',' ', 'roffset', 0);
+     dlmwrite('tipPos.csv',posToolTip(2),'-append','delimiter',' ', 'roffset', 1);
+     dlmwrite('tipPos.csv',posToolTip(3),'-append','delimiter',' ', 'roffset', 2);
+%      dlmwrite('elbowPos.csv',posElbow,'-append');
+%      dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
+%      dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
+%      dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
 
      % Clear the live link plot
      clf;
-     threeLinkPlot(l1, l2,...
-                   eCoordinate(l1, l2, q0, q1),...
-                   pCoordinate(l1, l2, l3, q0, q1, (q2 + 90)));
+     threeLinkPlot(l1, l2, posElbow, posToolTip);
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
 %      if(abs(returnValues(2)) < 500 && abs(returnValues(5)) < 500  && abs(returnValues(8)) < 500)
@@ -106,11 +110,11 @@ pp.shutdown()
 clear java;
 
 % Read in the angles from the CSV file and plot them
-xpos = csvread('xpos.csv');
-ypos = csvread('ypos.csv');
-zpos = csvread('zpos.csv');
+xposTT = csvread('tipPos.csv',1,1,[1 0 200 0]);
+yposTT = csvread('tipPos.csv',1,2,[1 1 200 1]);
+zposTT = csvread('tipPos.csv',1,3,[1 2 200 2]);
 
-pathPlot(xpos, ypos, zpos);
+pathPlot(xposTT, yposTT, zposTT);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');

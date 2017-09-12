@@ -12,6 +12,6 @@ eY0 = l2 * cosd(q1) * sind(q0);
 eZ0 = l1 + l2 * sind(q1);
 
 % Store the x, y, and z values in a matrix
-e = [eX0; eY0; eZ0];
+e = [eX0, eY0, eZ0];
 
 end
