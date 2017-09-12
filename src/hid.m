@@ -52,13 +52,13 @@ values(3) = 0;
 % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
 % torque targets
 % Position ranges from -200 to 1000
-values(4) = 760;
+values(4) = 0;
 values(5) = 0;
 values(6) = 0;
 % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
 % torque targets
 % Position ranges from -330 to 2400
-values(7) = -330;
+values(7) = 0;
 values(8) = 0;
 values(9) = 0;
 
@@ -68,7 +68,7 @@ delete 'values.csv';
 
 % This loop terminates after a few seconds to ensure the program ends in
 % case of an error in the firmware
-for k=1:20
+for k=1:40
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -137,7 +137,14 @@ for k=1:20
              state = 3;
              pause(1);
          
+             
          elseif(state == 3)
+            values(4) = 972;
+            values(7) = -165;
+            state = 3;
+            pause(1);
+         
+         elseif(state == 4)
             break
          end
 %         break
