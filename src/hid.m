@@ -9,45 +9,74 @@ import java.lang.*;
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
+% Make an empty plot
+createPlot;
+
+% We need to cycle through 3 states before terminating the program
+state = 0;
+
 % Set values for the lengths of link 1, 2, and 3
 l1 = 1;
 l2 = 1;
 l3 = 1;
 
+% Set KP, KI, KD for joints 0, 1, and 2
+gains = zeros(15, 1, 'single');
+% kp, ki, kd for joint 0
+gains(1) = 0.0025;
+gains(2) = 0;
+gains(3) = 0.015;
+% kp, ki, kd for joint 1
+gains(4) = 0.003;
+gains(5) = 0.0005;
+gains(6) = 0.03;
+% kp, ki, kd for joint 2
+gains(7) = 0.003;
+gains(8) = 0;
+gains(9) = 0.001;
+% Set the PID gains using the packet processor
+tic
+pp.command(39, gains);
+toc
+
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
-setpointReached = false;
+%Fill the PID control command packet with inital values:
+% Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+% torque targets
+% Position ranges from -980 to 1250
+values(1) = 0;
+values(2) = 0;
+values(3) = 0;
+% Send setpoint for joint 1 in raw encoder ticks, plus velocity and
+% torque targets
+% Position ranges from -200 to 1000
+values(4) = 0;
+values(5) = 0;
+values(6) = 0;
+% Send setpoint for joint 2 in raw encoder ticks, plus velocity and
+% torque targets
+% Position ranges from -330 to 2400
+values(7) = 0;
+values(8) = 0;
+values(9) = 0;
 
-createPlot;
+% Read old values file for positions
+setpoint.base = csvread('values.csv',0,0,[0 0 149 0]);
+setpoint.shoulder = csvread('values.csv',0,3,[0 3 149 3]);
+setpoint.elbow = csvread('values.csv',0,6,[0 6 14 9 6]);
 
 % we need a fresh list of angles every time, or else the plot will not work
 delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv'; 
 delete 'values.csv';
 
-% This loop runs for 10 seconds and iterates 40 times
-% A while loop would be required for lines 88-91
-% while setpointReached==false
-for k=1:40
-     %Create PID control command packet:
-     % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
-     % torque targets
-     % Position ranges from -980 to 1250
-     values(1) = -530; %330;
-     values(2) = 0;
-     values(3) = 0;
-     % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
-     % torque targets
-     % Position ranges from -200 to 1000
-     values(4) = 116; %400;
-     values(5) = 0;
-     values(6) = 0;
-     % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
-     % torque targets
-     % Position ranges from -330 to 2400
-     values(7) = -330; %1000;
-     values(8) = 0;
-     values(9) = 0;
+% This loop terminates after a few seconds to ensure the program ends in
+% case of an error in the firmware
+for k=1:150
+     values(1) = setpoint.base(k);
+     values(4) = setpoint.shoulder(k);
+     values(7) = setpoint.elbow(k);
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -88,21 +117,50 @@ for k=1:40
      % Calculate the position of the tool tip
      posToolTip = pCoordinate(l1, l2, l3, q0, q1, (q2 + 90));
      
-     dlmwrite('tipPos.csv',posToolTip(1),'-append','delimiter',' ', 'roffset', 0);
-     dlmwrite('tipPos.csv',posToolTip(2),'-append','delimiter',' ', 'roffset', 1);
-     dlmwrite('tipPos.csv',posToolTip(3),'-append','delimiter',' ', 'roffset', 2);
+%      dlmwrite('tipPos.csv',posToolTip(1),'-append','delimiter',' ', 'roffset', 0);
+%      dlmwrite('tipPos.csv',posToolTip(2),'-append','delimiter',' ', 'roffset', 1);
+%      dlmwrite('tipPos.csv',posToolTip(3),'-append','delimiter',' ', 'roffset', 2);
 %      dlmwrite('elbowPos.csv',posElbow,'-append');
-%      dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
-%      dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
-%      dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
+     dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
+     dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
+     dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
 
      % Clear the live link plot
      clf;
      threeLinkPlot(l1, l2, posElbow, posToolTip);
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
-%      if(abs(returnValues(2)) < 500 && abs(returnValues(5)) < 500  && abs(returnValues(8)) < 500)
-%          setpointReached = true;
+     
+%      if(returnValues(10)==1 && returnValues(11)==1 && returnValues(12) == 1)
+%          if(state == 0)
+%              values(4) = 972;
+%              values(7) = -165;
+%              state = 1;
+%              pause(1);
+%          
+%          elseif(state == 1)
+%              values(4) = 350;
+%              values(7) = 410;
+%              state = 2;
+%              pause(1);
+%          
+%          elseif(state == 2)
+%              values(4) = 760;
+%              values(7) = -343;
+%              state = 3;
+%              pause(1);
+%          
+%              
+%          elseif(state == 3)
+%             values(4) = 972;
+%             values(7) = -165;
+%             state = 4;
+%             pause(1);
+%          
+%          elseif(state == 4)
+%             break
+%          end
+%         break
 %      end
  end
  
@@ -110,11 +168,11 @@ pp.shutdown()
 clear java;
 
 % Read in the angles from the CSV file and plot them
-xposTT = csvread('tipPos.csv',1,1,[1 0 200 0]);
-yposTT = csvread('tipPos.csv',1,2,[1 1 200 1]);
-zposTT = csvread('tipPos.csv',1,3,[1 2 200 2]);
+xpos = csvread('xpos.csv');
+ypos = csvread('ypos.csv');
+zpos = csvread('zpos.csv');
 
-pathPlot(xposTT, yposTT, zposTT);
+pathPlot(xpos, ypos, zpos);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
