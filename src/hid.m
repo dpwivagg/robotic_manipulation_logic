@@ -14,6 +14,23 @@ l1 = 1;
 l2 = 1;
 l3 = 1;
 
+% Set KP, KI, KD for joints 0, 1, and 2
+gains = zeros(15, 1, 'single');
+% kp, ki, kd for joint 0
+gains(1) = 0.003;
+gains(2) = 0;
+gains(3) = 0.01;
+% kp, ki, kd for joint 1
+gains(4) = 0.003;
+gains(5) = 0.0005;
+gains(6) = 0.03;
+% kp, ki, kd for joint 2
+gains(7) = 0.003;
+gains(8) = 0;
+gains(9) = 0;
+% Set the PID gains using the packet processor
+pp.command(39, gains);
+
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
