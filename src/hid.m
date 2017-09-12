@@ -33,19 +33,19 @@ for k=1:40
      % Send setpoint for joint 0 in raw encoder ticks, plus velocity and
      % torque targets
      % Position ranges from -980 to 1250
-     values(1) = -530; %330;
+     values(1) = 100;
      values(2) = 0;
      values(3) = 0;
      % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
      % torque targets
      % Position ranges from -200 to 1000
-     values(4) = 116; %400;
+     values(4) = 100;
      values(5) = 0;
      values(6) = 0;
      % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
      % torque targets
      % Position ranges from -330 to 2400
-     values(7) = -330; %1000;
+     values(7) = 100;
      values(8) = 0;
      values(9) = 0;
      tic
