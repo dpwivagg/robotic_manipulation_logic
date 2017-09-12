@@ -97,9 +97,9 @@ for k=1:150
      %  Link 2 Position
      %  Link 2 Velocity
      %  Link 2 Torque
-     %  empty
-     %  empty
-     %  empty
+     %  Link 0 setpoint reached?
+     %  Link 1 setpoint reached?
+     %  Link 2 setpoint reached?
      %  empty
      %  empty
      %  empty
