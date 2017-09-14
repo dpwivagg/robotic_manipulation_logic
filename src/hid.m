@@ -63,9 +63,9 @@ values(8) = 0;
 values(9) = 0;
 
 % Read old values file for positions
-setpoint.base = csvread('values.csv',0,0,[0 0 149 0]);
-setpoint.shoulder = csvread('values.csv',0,3,[0 3 149 3]);
-setpoint.elbow = csvread('values.csv',0,6,[0 6 14 9 6]);
+% setpoint.base = csvread('values.csv',0,0,[0 0 39 0]);
+% setpoint.shoulder = csvread('values.csv',0,3,[0 3 39 3]);
+% setpoint.elbow = csvread('values.csv',0,6,[0 6 39 6]);
 
 % we need a fresh list of angles every time, or else the plot will not work
 delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv'; 
@@ -73,10 +73,11 @@ delete 'values.csv';
 
 % This loop terminates after a few seconds to ensure the program ends in
 % case of an error in the firmware
-for k=1:150
-     values(1) = setpoint.base(k);
-     values(4) = setpoint.shoulder(k);
-     values(7) = setpoint.elbow(k);
+for k=1:40
+    % Use this to replay an old path
+%      values(1) = setpoint.base(k);
+%      values(4) = setpoint.shoulder(k);
+%      values(7) = setpoint.elbow(k);
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -131,37 +132,48 @@ for k=1:150
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
      
-%      if(returnValues(10)==1 && returnValues(11)==1 && returnValues(12) == 1)
-%          if(state == 0)
-%              values(4) = 972;
-%              values(7) = -165;
-%              state = 1;
-%              pause(1);
-%          
-%          elseif(state == 1)
-%              values(4) = 350;
-%              values(7) = 410;
-%              state = 2;
-%              pause(1);
-%          
-%          elseif(state == 2)
-%              values(4) = 760;
-%              values(7) = -343;
-%              state = 3;
-%              pause(1);
-%          
-%              
-%          elseif(state == 3)
-%             values(4) = 972;
-%             values(7) = -165;
-%             state = 4;
-%             pause(1);
-%          
-%          elseif(state == 4)
-%             break
-%          end
-%         break
-%      end
+     if(returnValues(10)==1 && returnValues(11)==1 && returnValues(12) == 1)
+         if(state == 0)
+             values(1) = 826;
+             values(4) = 536;
+             values(7) = 1204;
+             state = 1;
+             pause(1);
+         
+         elseif(state == 1)
+             values(1) = 69;
+             values(4) = 239;
+             values(7) = 888;
+             state = 2;
+             pause(1);
+         
+         elseif(state == 2)
+             values(1) = -333;
+             values(4) = 518;
+             values(7) = 2406;
+             state = 3;
+             pause(1);
+         
+             
+         elseif(state == 3)
+            values(1) = -51;
+            values(4) = -267;
+            values(7) = 1569;
+            state = 4;
+            pause(1);
+            
+         elseif(state == 4)
+            values(1) = 733;
+            values(4) = 944;
+            values(7) = 3199;
+            state = 5;
+            pause(1);
+         
+         elseif(state == 5)
+            break
+         end
+        break
+     end
  end
  
 pp.shutdown()
