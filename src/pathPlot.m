@@ -1,6 +1,6 @@
-% Function pathPlot takes in x, y, and z positions from a .csv file
-% and creates a 3D plot of the path
-function f = pathPlot(xpos, ypos, zpos)
+% Function pathPlot takes in x, y, and z positions of the arm elbow and tip
+% from a .csv file and creates a 3D plot of the path
+function f = pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos)
 % Create circles showing range of arm
 theta = 0:pi/50:2*pi;
 
@@ -21,10 +21,11 @@ yzplane.z = 2 * sin(theta) + 1;
 
 % Create a plot for the position of the link over time
 clf;
-f = plot3(xpos, ypos, zpos,...
-      xyplane.x, xyplane.y, xyplane.z, 'k:',...
-      xzplane.x, xzplane.y, xzplane.z, 'k:',...
-      yzplane.x, yzplane.y, yzplane.z, 'k:');   % Plot the position of the arm over time
+f = plot3(xEpos, yEpos, zEpos,...
+          xTpos, yTpos, zTpos,...
+          xyplane.x, xyplane.y, xyplane.z, 'k:',...
+          xzplane.x, xzplane.y, xzplane.z, 'k:',...
+          yzplane.x, yzplane.y, yzplane.z, 'k:');
 hold on;                   % Hold on to objects in the axes
 box on;                    % Put a box around axes
 grid on;                   % Put gridlines on the figure
