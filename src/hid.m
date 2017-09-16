@@ -73,7 +73,7 @@ delete 'values.csv';
 
 % This loop terminates after a few seconds to ensure the program ends in
 % case of an error in the firmware
-for k=1:40
+for k=1:100
     % Use this to replay an old path
 %      values(1) = setpoint.base(k);
 %      values(4) = setpoint.shoulder(k);
@@ -113,10 +113,10 @@ for k=1:40
      q1 = (returnValues(4) / 12);
      q2 = 0 - (returnValues(7) / 12);
      
-     % Calculate the position of the elbow
+     % Calculate the position of the elbow, 3x1 vector
      posElbow = eCoordinate(l1, l2, q0, q1);
-     % Calculate the position of the tool tip
-     posToolTip = pCoordinate(l1, l2, l3, q0, q1, (q2 + 90));
+     % Calculate the position of the tool tip, 3x1 vector
+     posToolTip = pCoordinate(l1, l2, l3, q0, q1, q2 + 90);
      
 %      dlmwrite('tipPos.csv',posToolTip(1),'-append','delimiter',' ', 'roffset', 0);
 %      dlmwrite('tipPos.csv',posToolTip(2),'-append','delimiter',' ', 'roffset', 1);
@@ -128,7 +128,16 @@ for k=1:40
 
      % Clear the live link plot
      clf;
-     threeLinkPlot(l1, l2, posElbow, posToolTip);
+     % Plot the link in real time using trig for arm positions
+%      threeLinkPlot(l1, l2, posElbow, posToolTip);
+     
+     % Calculate the transformation matrix of the arm
+     TM = forPosKinematics(q0, q1, -(q2+90));
+     % Create a vector of just the tip position
+     vTT = [TM(1,4);TM(2,4);TM(3,4)];
+     % Plot the link in real time using transformation matrices for arm
+     % positions
+     threeLinkPlot(l1, l2, posElbow, vTT);
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
      
@@ -172,7 +181,6 @@ for k=1:40
          elseif(state == 5)
             break
          end
-        break
      end
  end
  
