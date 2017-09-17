@@ -129,7 +129,7 @@ for k = 1:40
      % Clear the live link plot
      clf;
      % Plot the link in real time using trig for arm positions
-%      threeLinkPlot(l1, l2, posElbow, posToolTip);
+%     threeLinkPlot(l1, l2, posElbow, posToolTip);
      
      % Calculate the transformation matrix of the arm
      TM = forPosKinematics(q0, q1, -(q2+90));
