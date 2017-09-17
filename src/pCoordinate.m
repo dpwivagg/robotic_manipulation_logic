@@ -12,6 +12,6 @@ pY0 = sind(q0) * (l2 * cosd(q1) + l3 * cosd(q1 - q2));
 pZ0 = l1 + (l2 * sind(q1)) + (l3 * sind(q1 - q2));
 
 % Store the x, y, z values in a matrix
-p = [pX0, pY0, pZ0];
+p = [pX0 pY0 pZ0];
 
 end

@@ -12,7 +12,7 @@ csv = 'values.csv';
 % Make an empty plot
 createPlot;
 
-% We need to cycle through 3 states before terminating the program
+% We need to cycle through 5 states before terminating the program
 state = 0;
 
 % Set values for the lengths of link 1, 2, and 3
@@ -63,20 +63,21 @@ values(8) = 0;
 values(9) = 0;
 
 % Read old values file for positions
-setpoint.base = csvread('values.csv',0,0,[0 0 149 0]);
-setpoint.shoulder = csvread('values.csv',0,3,[0 3 149 3]);
-setpoint.elbow = csvread('values.csv',0,6,[0 6 14 9 6]);
+% setpoint.base = csvread('values.csv',0,0,[0 0 39 0]);
+% setpoint.shoulder = csvread('values.csv',0,3,[0 3 39 3]);
+% setpoint.elbow = csvread('values.csv',0,6,[0 6 39 6]);
 
-% we need a fresh list of angles every time, or else the plot will not work
-delete 'xpos.csv'; delete 'ypos.csv'; delete 'zpos.csv'; 
-delete 'values.csv';
+% we need a fresh list of angles every time, or else the plot will not work 
+delete 'values.csv'; delete 'armPos.csv';
 
 % This loop terminates after a few seconds to ensure the program ends in
 % case of an error in the firmware
-for k=1:150
-     values(1) = setpoint.base(k);
-     values(4) = setpoint.shoulder(k);
-     values(7) = setpoint.elbow(k);
+% Define loop runtime
+for k = 1:40
+    % Use this to replay an old path
+%      values(1) = setpoint.base(k);
+%      values(4) = setpoint.shoulder(k);
+%      values(7) = setpoint.elbow(k);
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -112,55 +113,74 @@ for k=1:150
      q1 = (returnValues(4) / 12);
      q2 = 0 - (returnValues(7) / 12);
      
-     % Calculate the position of the elbow
+     % Calculate the position of the elbow, 3x1 vector
      posElbow = eCoordinate(l1, l2, q0, q1);
-     % Calculate the position of the tool tip
-     posToolTip = pCoordinate(l1, l2, l3, q0, q1, (q2 + 90));
-     
-%      dlmwrite('tipPos.csv',posToolTip(1),'-append','delimiter',' ', 'roffset', 0);
-%      dlmwrite('tipPos.csv',posToolTip(2),'-append','delimiter',' ', 'roffset', 1);
-%      dlmwrite('tipPos.csv',posToolTip(3),'-append','delimiter',' ', 'roffset', 2);
+     % Calculate the position of the tool tip, 3x1 vector
+     posToolTip = pCoordinate(l1, l2, l3, q0, q1, q2 + 90);
+     % Combine coordinates of elbow and tip to create one vector for csv
+     posArm = [posElbow posToolTip];
+     % Write the cartesian coordinates of arm to csv file
+     dlmwrite('armPos.csv',posArm,'-append','delimiter',' ');
 %      dlmwrite('elbowPos.csv',posElbow,'-append');
-     dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
-     dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
-     dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
+%      dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
+%      dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
+%      dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
 
      % Clear the live link plot
      clf;
-     threeLinkPlot(l1, l2, posElbow, posToolTip);
+     % Plot the link in real time using trig for arm positions
+%     threeLinkPlot(l1, l2, posElbow, posToolTip);
+     
+     % Calculate the transformation matrix of the arm
+     TM = forPosKinematics(q0, q1, -(q2+90));
+     % Create a vector of just the tip position
+     vTT = [TM(1,4);TM(2,4);TM(3,4)];
+     % Plot the link in real time using transformation matrices for arm
+     % positions
+     threeLinkPlot(l1, l2, posElbow, vTT);
 %      This is some potential code for stopping the robot once it reaches
 %      the setpoint
      
 %      if(returnValues(10)==1 && returnValues(11)==1 && returnValues(12) == 1)
 %          if(state == 0)
-%              values(4) = 972;
-%              values(7) = -165;
+%              values(1) = 826;
+%              values(4) = 536;
+%              values(7) = 1204;
 %              state = 1;
 %              pause(1);
 %          
 %          elseif(state == 1)
-%              values(4) = 350;
-%              values(7) = 410;
+%              values(1) = 69;
+%              values(4) = 239;
+%              values(7) = 888;
 %              state = 2;
 %              pause(1);
 %          
 %          elseif(state == 2)
-%              values(4) = 760;
-%              values(7) = -343;
+%              values(1) = -333;
+%              values(4) = 518;
+%              values(7) = 2406;
 %              state = 3;
 %              pause(1);
 %          
 %              
 %          elseif(state == 3)
-%             values(4) = 972;
-%             values(7) = -165;
+%             values(1) = -51;
+%             values(4) = -267;
+%             values(7) = 1569;
 %             state = 4;
 %             pause(1);
-%          
+%             
 %          elseif(state == 4)
+%             values(1) = 733;
+%             values(4) = 944;
+%             values(7) = 3199;
+%             state = 5;
+%             pause(1);
+%          
+%          elseif(state == 5)
 %             break
 %          end
-%         break
 %      end
  end
  
@@ -168,11 +188,14 @@ pp.shutdown()
 clear java;
 
 % Read in the angles from the CSV file and plot them
-xpos = csvread('xpos.csv');
-ypos = csvread('ypos.csv');
-zpos = csvread('zpos.csv');
+xEpos = dlmread('armPos.csv',' ',[0 0 39 0]);
+yEpos = dlmread('armPos.csv',' ',[0 1 39 1]);
+zEpos = dlmread('armPos.csv',' ',[0 2 39 2]);
+xTpos = dlmread('armPos.csv',' ',[0 3 39 3]);
+yTpos = dlmread('armPos.csv',' ',[0 4 39 4]);
+zTpos = dlmread('armPos.csv',' ',[0 5 39 5]);
 
-pathPlot(xpos, ypos, zpos);
+pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load the xml file
 % xDoc = xmlread('seaArm.xml');
