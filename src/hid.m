@@ -82,9 +82,11 @@ for k = 1:40
 %      values(1) = setpoint.base(k);
 %      values(4) = setpoint.shoulder(k);
 %      values(7) = setpoint.elbow(k);
+    % take snapshot of workspace
      img = snapshot(cam);
      clf;
-     processImage(img);
+     % crop enhance and change image and bring back centrioid cordinates
+     y = processImage(img);
      
      tic
      %Process command and print the returning values
