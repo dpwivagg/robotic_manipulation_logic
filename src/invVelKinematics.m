@@ -21,6 +21,7 @@ q2 = q2 * (pi/180);
 % Substitute values into symbolic Jacobian
 iJ = subs(iJ, [symq0 symq1 symq2 syml1 syml2 syml3], [q0 q1 q2 l1 l2 l3]);
 
-% Multiply the inverse Jacobian by the tip velocity vector
+% Calculate angular velocity at each joint by multiplying the inverse 
+% Jacobian by the tip velocity vector 
 iVM = iJ * tipV;
 end

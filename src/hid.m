@@ -9,6 +9,9 @@ import java.lang.*;
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
+% Initialize camera
+cam = webcam('USB 2.0 Camera');
+
 % Make an empty plot
 createPlot;
 
@@ -62,10 +65,8 @@ values(7) = 0;
 values(8) = 0;
 values(9) = 0;
 
-% Read old values file for positions
-% setpoint.base = csvread('values.csv',0,0,[0 0 39 0]);
-% setpoint.shoulder = csvread('values.csv',0,3,[0 3 39 3]);
-% setpoint.elbow = csvread('values.csv',0,6,[0 6 39 6]);
+% Create desired velocity setpoints
+taskV1 = [0; 0; 5];
 
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv';
@@ -74,10 +75,13 @@ delete 'values.csv'; delete 'armPos.csv';
 % case of an error in the firmware
 % Define loop runtime
 for k = 1:40
+% while 1
     % Use this to replay an old path
 %      values(1) = setpoint.base(k);
 %      values(4) = setpoint.shoulder(k);
 %      values(7) = setpoint.elbow(k);
+     img = snapshot(cam);
+     clf;
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -121,67 +125,35 @@ for k = 1:40
      posArm = [posElbow posToolTip];
      % Write the cartesian coordinates of arm to csv file
      dlmwrite('armPos.csv',posArm,'-append','delimiter',' ');
-%      dlmwrite('elbowPos.csv',posElbow,'-append');
-%      dlmwrite('xpos.csv',posToolTip(1),'-append','delimiter',' ')
-%      dlmwrite('ypos.csv',posToolTip(2),'-append','delimiter',' ')
-%      dlmwrite('zpos.csv',posToolTip(3),'-append','delimiter',' ')
 
      % Clear the live link plot
      clf;
      % Plot the link in real time using trig for arm positions
-%     threeLinkPlot(l1, l2, posElbow, posToolTip);
+%      threeLinkPlot(l1, l2, posElbow, posToolTip);
      
      % Calculate the transformation matrix of the arm
      TM = forPosKinematics(q0, q1, -(q2+90));
+     % Create the rotation matrix out of the transformation matrix
+     RM = [TM(1,1),TM(1,2),TM(1,3);...
+           TM(2,1),TM(2,2),TM(2,3);...
+           TM(3,1),TM(3,2),TM(3,3)]
+     % Calculate the transpose of the rotation matrix
+     RMt = transpose(RM)
      % Create a vector of just the tip position
-     vTT = [TM(1,4);TM(2,4);TM(3,4)];
+     TP = [TM(1,4);TM(2,4);TM(3,4)];
      % Plot the link in real time using transformation matrices for arm
      % positions
-     threeLinkPlot(l1, l2, posElbow, vTT);
-%      This is some potential code for stopping the robot once it reaches
-%      the setpoint
+     threeLinkPlot(l1, l2, posElbow, TP);
      
-%      if(returnValues(10)==1 && returnValues(11)==1 && returnValues(12) == 1)
-%          if(state == 0)
-%              values(1) = 826;
-%              values(4) = 536;
-%              values(7) = 1204;
-%              state = 1;
-%              pause(1);
-%          
-%          elseif(state == 1)
-%              values(1) = 69;
-%              values(4) = 239;
-%              values(7) = 888;
-%              state = 2;
-%              pause(1);
-%          
-%          elseif(state == 2)
-%              values(1) = -333;
-%              values(4) = 518;
-%              values(7) = 2406;
-%              state = 3;
-%              pause(1);
-%          
-%              
-%          elseif(state == 3)
-%             values(1) = -51;
-%             values(4) = -267;
-%             values(7) = 1569;
-%             state = 4;
-%             pause(1);
-%             
-%          elseif(state == 4)
-%             values(1) = 733;
-%             values(4) = 944;
-%             values(7) = 3199;
-%             state = 5;
-%             pause(1);
-%          
-%          elseif(state == 5)
-%             break
-%          end
-%      end
+     % Calculate the inverse velocity kinematics
+     jointV1 = double(invVelKinematics(taskV1, q0, q1, q2))
+     % Create a new setpoint vector using the inverse velocity and elapsed
+     % time
+     newSetpoint = jointV1 * toc
+     values(1) = values(1) + newSetpoint(1)*12
+     values(4) = values(4) + newSetpoint(2)*12
+     values(7) = values(7) + newSetpoint(3)*12
+     dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
  end
  
 pp.shutdown()
@@ -196,52 +168,3 @@ yTpos = dlmread('armPos.csv',' ',[0 4 39 4]);
 zTpos = dlmread('armPos.csv',' ',[0 5 39 5]);
 
 pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos);
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Load the xml file
-% xDoc = xmlread('seaArm.xml');
-% %All Arms
-% allAppendage =xDoc.getElementsByTagName('appendage');
-% %All walking legs
-% %allAppendage =xDoc.getElementsByTagName('leg');
-% %All drivabel wheels
-% %allAppendage =xDoc.getElementsByTagName('drivable');
-% %All steerable wheels
-% %allAppendage =xDoc.getElementsByTagName('steerable');
-% %Grab the first appendage
-% appendages = allAppendage.item(0);
-% %all the D-H parameter tags
-% allListitems = appendages.getElementsByTagName('DHParameters');
-% %Load the transfrom of home to the base of the arm
-% baseTransform = appendages.getElementsByTagName('baseToZframe').item(0);
-% %Print all the values
-% printTag(baseTransform,'x');
-% printTag(baseTransform,'y');
-% printTag(baseTransform,'z');
-% printTag(baseTransform,'rotw');
-% printTag(baseTransform,'rotx');
-% printTag(baseTransform,'roty');
-% printTag(baseTransform,'rotz');
-% % Print D-H parameters
-% for k = 0:allListitems.getLength-1
-%    thisListitem = allListitems.item(k);
-%    fprintf('\nLink %i\n',k);
-%    % Get the label element. In this file, each
-%    % listitem contains only one label.
-%    printTag(thisListitem,'Delta');
-%    printTag(thisListitem,'Theta');
-%    printTag(thisListitem,'Radius');
-%    printTag(thisListitem,'Alpha');
-% end
-% % Get the value stored in a tag
-% function value = tagValue(thisListitem,name)
-%    % listitem contains only one label.
-%    thisList = thisListitem.getElementsByTagName(name);
-%    thisElement = thisList.item(0);
-%    data  = thisElement.getFirstChild.getData;
-%    value = str2double(data);
-% end
-% %Print out the tag name with its value
-% function printTag(thisListitem,name)
-%    data  = tagValue(thisListitem,name);
-%    fprintf('%s \t%f\n',name,data);
-% end
