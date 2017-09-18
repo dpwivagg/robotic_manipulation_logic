@@ -66,7 +66,9 @@ values(8) = 0;
 values(9) = 0;
 
 % Create desired velocity setpoints
-taskV1 = [0; 0; 5];
+% midddle value needs to be higher than .5
+% side values can be .5
+taskV1 = [0; 0.6; 0];
 
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv';
@@ -82,6 +84,8 @@ for k = 1:40
 %      values(7) = setpoint.elbow(k);
      img = snapshot(cam);
      clf;
+     processImage(img);
+     
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);

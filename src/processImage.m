@@ -1,5 +1,5 @@
 % This function takes an RGB image and returns the image with centroid
-function processImage(RGB)
+function centroids = processImage(RGB)
 % Crop the image to just the workspace
 RGB = imcrop(RGB, [470 258 1020 822]);
 
