@@ -136,9 +136,9 @@ for k = 1:40
      % Create the rotation matrix out of the transformation matrix
      RM = [TM(1,1),TM(1,2),TM(1,3);...
            TM(2,1),TM(2,2),TM(2,3);...
-           TM(3,1),TM(3,2),TM(3,3)]
+           TM(3,1),TM(3,2),TM(3,3)];
      % Calculate the transpose of the rotation matrix
-     RMt = transpose(RM)
+     RMt = transpose(RM);
      % Create a vector of just the tip position
      TP = [TM(1,4);TM(2,4);TM(3,4)];
      % Plot the link in real time using transformation matrices for arm
