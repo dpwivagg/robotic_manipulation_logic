@@ -55,7 +55,7 @@ diameters = mean([properties.MajorAxisLength properties.MinorAxisLength],2);
 radii = diameters/2;
 
 % Display
-imshow(binary)
+imshow(binary);
 hold on
 plot(centroids(:,1), centroids(:,2), 'b*')
 viscircles(centroids,radii);

@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 20;
+runtime = 60;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -61,7 +61,7 @@ values(3) = 0;
 % Send setpoint for joint 1 in raw encoder ticks, plus velocity and
 % torque targets
 % Position ranges from -200 to 1000
-values(4) = 0;
+values(4) = 40;
 values(5) = 0;
 values(6) = 0;
 % Send setpoint for joint 2 in raw encoder ticks, plus velocity and
@@ -99,7 +99,16 @@ taskV1 = TP - objposition;
 %% Begin program loop
 genesis = tic;
 while 1
-     
+     % take snapshot of workspace
+     img = snapshot(cam);
+
+     % crop enhance and change image and bring back centrioid cordinates
+     centroidpix = processImage(img);
+
+     % convert pixels to xy
+     [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
+     objposition = [xcord;ycord;0];
+    
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -138,14 +147,25 @@ while 1
      % Plot the link in real time using transformation matrices for arm
      % positions
      threeLinkPlot(l1, l2, posElbow, TP);
-
+    
      % Calculate the inverse velocity kinematics
      jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));
-     % Create a new setpoint vector using the inverse velocity and elapsed
-     % time
-%     error = norm(TP - objposition)
-     newSetpoint =  jointV1 * toc;
-     %newSetpoint = newSetpoint * (objposition - TP);
+     
+     % Adjust the link lengths to actual values, shift the frame from robot
+     % to tip home
+     TP(1) = (TP(1) * 20) - 20;
+     TP(2) = TP(2) * 17;
+     TP(3) = TP(3) * 20;
+     
+     taskV1 = TP - objposition;
+     
+     % Calculate the error (distance between setpoint and actual)
+     % Mutliply it by KP constant
+     error = 1.5 * norm(TP - objposition);
+     
+     % Convert the velocity to a position setpoint and multiply by gain
+     newSetpoint =  error * jointV1 * toc;
+     
      values(1) = values(1) + newSetpoint(1)*12;
      values(4) = values(4) + newSetpoint(2)*12;
      values(7) = values(7) + newSetpoint(3)*12;
