@@ -2,8 +2,7 @@
 function centroids = processImage(RGB)
 % Crop the image to just the workspace
 %RGB = imcrop(RGB, [470 258 1020 822]);
-% work on this 
-%RGB = RGB*repmat(M,[1,1,3]);
+
 % Convert RGB image to chosen color space
 I = rgb2hsv(RGB);
 
@@ -39,13 +38,6 @@ binary = imbinarize(gray);
 
 % Reduce noise in binary image
 binary = bwareaopen(binary, 60);
-
-% Create a binary mask and apply it to the image
-% This turns all the pixels outside the ROI (region of interest) black
-x = [499 1458 1458 499 499];
-y = [457 457 933 933 457];
-mask = poly2mask(x,y,1080,1920);
-binary(~mask) = 0;
 
 % Calculate centroid, minor and major axis length
 properties = regionprops(binary,'Centroid','MajorAxisLength','MinorAxisLength');

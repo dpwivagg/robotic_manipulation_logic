@@ -2,7 +2,7 @@
 % angles and returns a 3x1 velocity vector
 function VM = forVelKinematics(q0, q1, q2, v0, v1, v2)
 % Define link lengths
-l1 = 20; l2 = 17; l3 = 20;
+l1 = 1; l2 = 1; l3 = 1;
 
 % Calculate the symbolic Jacobian matrix
 syms symq0 symq1 symq2 syml1 syml2 syml3
