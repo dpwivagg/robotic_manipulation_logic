@@ -1,6 +1,26 @@
 # RBE3001 Matlab Template
 This is template code for talking to the Default firmware
 
+## Comms Protocol
+This program uses the following communication protocol when sending and receiving packets from the Nucleo:
+     Byte Array Structure: 64 bytes
+     4-byte command identifier
+     Link 0 Position
+     Link 0 Velocity
+     Link 0 Torque
+     Link 1 Position
+     Link 1 Velocity
+     Link 1 Torque
+     Link 2 Position
+     Link 2 Velocity
+     Link 2 Torque
+     Link 0 setpoint reached?
+     Link 1 setpoint reached?
+     Link 2 setpoint reached?
+     empty
+     empty
+     empty
+
 ## Configure git
 ```
 git config --global user.name "John Doe"

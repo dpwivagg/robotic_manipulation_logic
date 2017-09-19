@@ -6,6 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.lang.*;
 
+%% Set up variables and file names
+runtime = 20;
+
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
@@ -15,14 +18,15 @@ cam = webcam('USB 2.0 Camera');
 % Make an empty plot
 createPlot;
 
-% We need to cycle through 5 states before terminating the program
-state = 0;
-
 % Set values for the lengths of link 1, 2, and 3
 l1 = 1;
 l2 = 1;
 l3 = 1;
 
+% we need a fresh list of angles every time, or else the plot will not work 
+delete 'values.csv'; delete 'armPos.csv';
+
+%% KP Tuning Parameters
 % Set KP, KI, KD for joints 0, 1, and 2
 gains = zeros(15, 1, 'single');
 % kp, ki, kd for joint 0
@@ -42,6 +46,7 @@ tic
 pp.command(39, gains);
 toc
 
+%% Initial values for position command
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
@@ -65,70 +70,37 @@ values(7) = 0;
 values(8) = 0;
 values(9) = 0;
 
-% we need a fresh list of angles every time, or else the plot will not work 
-delete 'values.csv'; delete 'armPos.csv';
-
+%% Take a camera snapshot to start with
 % take snapshot of workspace
 img = snapshot(cam);
-clf;
+
 % crop enhance and change image and bring back centrioid cordinates
 centroidpix = processImage(img);
+
 % convert pixels to xy
 [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
 objposition = [xcord;ycord;0];
-% calculating forward position kinamatics for home
-TM = forPosKinematics(0, 0, -(90));
-% Create the rotation matrix out of the transformation matrix
-RM = [TM(1,1),TM(1,2),TM(1,3);...
-TM(2,1),TM(2,2),TM(2,3);...
-TM(3,1),TM(3,2),TM(3,3)];
-% Calculate the transpose of the rotation matrix
-RMt = transpose(RM);
+
+%% Set up initial velocity setpoint
+
+% Calculate the transformation matrix of the arm
+TM = forPosKinematics(0, 0, -90);
+
 % Create a vector of just the tip position
 TP = [TM(1,4);TM(2,4);TM(3,4)];
-% vector from object to tip
-vectorobj = TP - objposition;
 
-% Create desired velocity setpoints
-% midddle value needs to be higher than .5
-% side values can be .5
-taskV1 = [0,1,0];
+% Create desired velocity setpoints and direction
+taskV1 = objposition - TP;
+
+
+%% Begin program loop
+tic(genesis);
+while 1
      
-% This loop terminates after a few seconds to ensure the program ends in
-% case of an error in the firmware
-% Define loop runtime
-for k = 1:40
-% while 1
-    % Use this to replay an old path
-%      values(1) = setpoint.base(k);
-%      values(4) = setpoint.shoulder(k);
-%      values(7) = setpoint.elbow(k);
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
      toc
-     disp('sent');
-     disp(values);
-     disp('got');
-     disp(returnValues);
-     
-     % Byte Array Structure: 64 bytes
-     %  4-byte command identifier
-     %  Link 0 Position
-     %  Link 0 Velocity
-     %  Link 0 Torque
-     %  Link 1 Position
-     %  Link 1 Velocity
-     %  Link 1 Torque
-     %  Link 2 Position
-     %  Link 2 Velocity
-     %  Link 2 Torque
-     %  Link 0 setpoint reached?
-     %  Link 1 setpoint reached?
-     %  Link 2 setpoint reached?
-     %  empty
-     %  empty
-     %  empty
      
      pause(0.1) %timeit(returnValues)
      dlmwrite(csv, transpose(returnValues), '-append');     
@@ -149,8 +121,6 @@ for k = 1:40
 
      % Clear the live link plot
      clf;
-     % Plot the link in real time using trig for arm positions
-%      threeLinkPlot(l1, l2, posElbow, posToolTip);
      
      % Calculate the transformation matrix of the arm
      TM = forPosKinematics(q0, q1, -(q2+90));
@@ -171,16 +141,22 @@ for k = 1:40
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
      newSetpoint = jointV1 * toc;
+     newSetpoint = newSetpoint * (objectpos - TP);
      values(1) = values(1) + newSetpoint(1)*12;
      values(4) = values(4) + newSetpoint(2)*12;
      values(7) = values(7) + newSetpoint(3)*12;
      dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
- end
+     
+     % if the total elapsed time is greater than desired, end the loop
+     if(toc(genesis) > runtime) 
+         break;
+     end
+end
  
+%% Clean up and do final plotting 
 pp.shutdown()
 clear('cam');
 clear java;
-
 
 % Read in the angles from the CSV file and plot them
 xEpos = dlmread('armPos.csv',' ',[0 0 39 0]);
