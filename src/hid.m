@@ -93,9 +93,8 @@ TP = [TM(1,4);TM(2,4);TM(3,4)];
 taskV1 = (objposition - TP);
 
 %% Begin program loop
-% genesis = tic;
-% while 1
-for k=1:200
+genesis = tic;
+while 1
      
      tic
      %Process command and print the returning values
@@ -137,7 +136,7 @@ for k=1:200
      threeLinkPlot(l1, l2, posElbow, TP);
      
      % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q0, q1, q2));
+     jointV1 = double(invVelKinematics([3;-7;0], q0, q1, q2));
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
      newSetpoint = jointV1 * toc
@@ -148,9 +147,9 @@ for k=1:200
      dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
      
      % if the total elapsed time is greater than desired, end the loop
-%      if(toc(genesis) > runtime) 
-%          break;
-%      end
+     if(toc(genesis) > runtime) 
+         break;
+     end
 end
  
 %% Clean up and do final plotting 
