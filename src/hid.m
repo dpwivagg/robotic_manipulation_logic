@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 60;
+runtime = 30;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -25,7 +25,7 @@ l2 = 1;
 l3 = 1;
 
 % we need a fresh list of angles every time, or else the plot will not work 
-delete 'values.csv'; delete 'armPos.csv';
+delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
 
 %% KP Tuning Parameters
 % Set KP, KI, KD for joints 0, 1, and 2
@@ -92,7 +92,8 @@ TM = forPosKinematics(0, 0, -90);
 
 % Create a vector of just the tip position
 TP = [TM(1,4);TM(2,4);TM(3,4)];
-
+    xcord = 0; ycord = 1;
+     objposition = [xcord;ycord;0];
 % Create desired velocity setpoints and direction
 taskV1 = TP - objposition;
 
@@ -107,7 +108,10 @@ while 1
 
      % convert pixels to xy
      [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
-     objposition = [xcord;ycord;0];
+      %  xcord = 5; ycord = 0;
+     objposition = [xcord ycord 0];
+     % Capture the position of the Pip as it moves through the workspace
+     dlmwrite('pipPos.csv',objposition,'-append','delimiter',' ');
     
      tic
      %Process command and print the returning values
@@ -146,7 +150,7 @@ while 1
      TP = [TM(1,4);TM(2,4);TM(3,4)];
      % Plot the link in real time using transformation matrices for arm
      % positions
-     threeLinkPlot(l1, l2, posElbow, TP);
+     %threeLinkPlot(l1, l2, posElbow, TP);
     
      % Calculate the inverse velocity kinematics
      jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));
@@ -167,7 +171,7 @@ while 1
      newSetpoint =  error * jointV1 * toc;
      
      values(1) = values(1) + newSetpoint(1)*12;
-     values(4) = values(4) + newSetpoint(2)*12;
+     values(4) = 80;%values(4) + newSetpoint(2)*12;
      values(7) = values(7) + newSetpoint(3)*12;
      dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
      
@@ -189,5 +193,8 @@ zEpos = dlmread('armPos.csv',' ',[0 2 39 2]);
 xTpos = dlmread('armPos.csv',' ',[0 3 39 3]);
 yTpos = dlmread('armPos.csv',' ',[0 4 39 4]);
 zTpos = dlmread('armPos.csv',' ',[0 5 39 5]);
+xPpos = (dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
+yPpos = dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
+zPpos = dlmread('pipPos.csv',' ',[0 2 19 2]);
 
-pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos);
+pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
