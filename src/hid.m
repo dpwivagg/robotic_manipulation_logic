@@ -46,7 +46,7 @@ tic
 pp.command(39, gains);
 toc
 
-%% Initial values for position command
+%% Initial values for position command-lift to take a picture
 %Create an array of 32 bit floaing point zeros to load an pass to the
 %packet processor
 values = zeros(15, 1, 'single');
@@ -69,6 +69,9 @@ values(6) = 0;
 values(7) = 0;
 values(8) = 0;
 values(9) = 0;
+tic
+pp.command(38, values);
+toc
 
 %% Take a camera snapshot to start with
 % take snapshot of workspace
@@ -134,12 +137,12 @@ while 1
      % Plot the link in real time using transformation matrices for arm
      % positions
      threeLinkPlot(l1, l2, posElbow, TP);
-     
+
      % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q0, q1, -(q2+90)));
+     jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
-     newSetpoint = jointV1 * toc;
+     newSetpoint = 4 * jointV1 * toc;
      %newSetpoint = newSetpoint * (objposition - TP);
      values(1) = values(1) + newSetpoint(1)*12;
      values(4) = values(4) + newSetpoint(2)*12;
