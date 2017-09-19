@@ -65,14 +65,35 @@ values(7) = 0;
 values(8) = 0;
 values(9) = 0;
 
-% Create desired velocity setpoints
-% midddle value needs to be higher than .5
-% side values can be .5
-taskV1 = [0; 0.6; 0];
-
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv';
 
+% take snapshot of workspace
+img = snapshot(cam);
+clf;
+% crop enhance and change image and bring back centrioid cordinates
+centroidpix = processImage(img);
+% convert pixels to xy
+[xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
+objposition = [xcord;ycord;0];
+% calculating forward position kinamatics for home
+TM = forPosKinematics(0, 0, -(90));
+% Create the rotation matrix out of the transformation matrix
+RM = [TM(1,1),TM(1,2),TM(1,3);...
+TM(2,1),TM(2,2),TM(2,3);...
+TM(3,1),TM(3,2),TM(3,3)];
+% Calculate the transpose of the rotation matrix
+RMt = transpose(RM);
+% Create a vector of just the tip position
+TP = [TM(1,4);TM(2,4);TM(3,4)];
+% vector from object to tip
+vectorobj = TP - objposition;
+
+% Create desired velocity setpoints
+% midddle value needs to be higher than .5
+% side values can be .5
+taskV1 = [0,1,0];
+     
 % This loop terminates after a few seconds to ensure the program ends in
 % case of an error in the firmware
 % Define loop runtime
@@ -82,12 +103,6 @@ for k = 1:40
 %      values(1) = setpoint.base(k);
 %      values(4) = setpoint.shoulder(k);
 %      values(7) = setpoint.elbow(k);
-    % take snapshot of workspace
-     img = snapshot(cam);
-     clf;
-     % crop enhance and change image and bring back centrioid cordinates
-     y = processImage(img);
-     
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -152,18 +167,20 @@ for k = 1:40
      threeLinkPlot(l1, l2, posElbow, TP);
      
      % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q0, q1, q2))
+     jointV1 = double(invVelKinematics(taskV1, q0, q1, q2));
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
-     newSetpoint = jointV1 * toc
-     values(1) = values(1) + newSetpoint(1)*12
-     values(4) = values(4) + newSetpoint(2)*12
-     values(7) = values(7) + newSetpoint(3)*12
+     newSetpoint = jointV1 * toc;
+     values(1) = values(1) + newSetpoint(1)*12;
+     values(4) = values(4) + newSetpoint(2)*12;
+     values(7) = values(7) + newSetpoint(3)*12;
      dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
  end
  
 pp.shutdown()
+clear('cam');
 clear java;
+
 
 % Read in the angles from the CSV file and plot them
 xEpos = dlmread('armPos.csv',' ',[0 0 39 0]);
