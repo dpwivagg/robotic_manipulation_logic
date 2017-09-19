@@ -2,7 +2,7 @@
 % current joint angles and returns the three joint angular velocities
 function iVM = invVelKinematics(tipV, q0, q1, q2)
 % Define link lengths
-l1 = 20; l2 = 17; l3 = 20;
+l1 = 1; l2 = 1; l3 = 1;
 
 % Calculate the symbolic Jacobian
 syms symq0 symq1 symq2 syml1 syml2 syml3
