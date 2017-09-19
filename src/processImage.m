@@ -2,7 +2,8 @@
 function centroids = processImage(RGB)
 % Crop the image to just the workspace
 %RGB = imcrop(RGB, [470 258 1020 822]);
-
+% work on this 
+%RGB = RGB*repmat(M,[1,1,3]);
 % Convert RGB image to chosen color space
 I = rgb2hsv(RGB);
 

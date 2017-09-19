@@ -90,12 +90,12 @@ TM = forPosKinematics(0, 0, -90);
 TP = [TM(1,4);TM(2,4);TM(3,4)];
 
 % Create desired velocity setpoints and direction
-taskV1 = objposition - TP;
-
+taskV1 = (objposition - TP);
 
 %% Begin program loop
-tic(genesis);
-while 1
+% genesis = tic;
+% while 1
+for k=1:200
      
      tic
      %Process command and print the returning values
@@ -140,17 +140,17 @@ while 1
      jointV1 = double(invVelKinematics(taskV1, q0, q1, q2));
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
-     newSetpoint = jointV1 * toc;
-     newSetpoint = newSetpoint * (objectpos - TP);
+     newSetpoint = jointV1 * toc
+     %newSetpoint = newSetpoint * (objposition - TP);
      values(1) = values(1) + newSetpoint(1)*12;
      values(4) = values(4) + newSetpoint(2)*12;
      values(7) = values(7) + newSetpoint(3)*12;
      dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
      
      % if the total elapsed time is greater than desired, end the loop
-     if(toc(genesis) > runtime) 
-         break;
-     end
+%      if(toc(genesis) > runtime) 
+%          break;
+%      end
 end
  
 %% Clean up and do final plotting 
