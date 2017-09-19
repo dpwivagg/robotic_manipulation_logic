@@ -90,7 +90,7 @@ TM = forPosKinematics(0, 0, -90);
 TP = [TM(1,4);TM(2,4);TM(3,4)];
 
 % Create desired velocity setpoints and direction
-taskV1 = (objposition - TP);
+taskV1 = TP - objposition;
 
 %% Begin program loop
 genesis = tic;
@@ -136,10 +136,10 @@ while 1
      threeLinkPlot(l1, l2, posElbow, TP);
      
      % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics([3;-7;0], q0, q1, q2));
+     jointV1 = double(invVelKinematics(taskV1, q0, q1, -(q2+90)));
      % Create a new setpoint vector using the inverse velocity and elapsed
      % time
-     newSetpoint = jointV1 * toc
+     newSetpoint = jointV1 * toc;
      %newSetpoint = newSetpoint * (objposition - TP);
      values(1) = values(1) + newSetpoint(1)*12;
      values(4) = values(4) + newSetpoint(2)*12;
