@@ -14,7 +14,9 @@ pp = PacketProcessor(7);
 csv = 'values.csv';
 
 % Initialize camera
-cam = webcam('USB 2.0 Camera');
+if(~exist('cam','var'))
+    cam = webcam('USB 2.0 Camera');
+end
 
 % Make an empty plot
 createPlot;
@@ -74,16 +76,16 @@ tic
 pp.command(38, values);
 toc
 
-%% Take a camera snapshot to start with
-% take snapshot of workspace
-img = snapshot(cam);
-
-% crop enhance and change image and bring back centrioid cordinates
-centroidpix = processImage(img);
-
-% convert pixels to xy
-[xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
-objposition = [xcord;ycord;0];
+% %% Take a camera snapshot to start with
+% % take snapshot of workspace
+% img = snapshot(cam);
+% 
+% % crop enhance and change image and bring back centrioid cordinates
+% centroidpix = processImage(img);
+% 
+% % convert pixels to xy
+% [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
+% objposition = [xcord;ycord;0];
 
 %% Set up initial velocity setpoint
 
