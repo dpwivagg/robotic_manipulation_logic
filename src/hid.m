@@ -20,9 +20,9 @@ cam = webcam('USB 2.0 Camera');
 createPlot;
 
 % Set values for the lengths of link 1, 2, and 3
-l1 = 1;
-l2 = 1;
-l3 = 1;
+l1 = 20;
+l2 = 17;
+l3 = 20;
 
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
@@ -150,7 +150,7 @@ while 1
      TP = [TM(1,4);TM(2,4);TM(3,4)];
      % Plot the link in real time using transformation matrices for arm
      % positions
-     %threeLinkPlot(l1, l2, posElbow, TP);
+     threeLinkPlot(l1, l2, posElbow, TP);
     
      % Calculate the inverse velocity kinematics
      jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));

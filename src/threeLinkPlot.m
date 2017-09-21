@@ -9,7 +9,7 @@ function threeLinkPlot(l1, l2, p2, p3)
 p0 = [0; 0; 0];
 
 % First link point, 3x1
-p1 = [0; 0; 1];
+p1 = [0; 0; 20];
 % Vectors from p0 to p1 in x, y, z
 x1 = [p0(1) p1(1)];
 y1 = [p0(2) p1(2)];
@@ -73,7 +73,7 @@ box on;
 % Put gridlines on the figure
 grid on;
 % Set axes limits
-axis([-2 2 -2 2 0 3]);
+axis([-40 40 -40 40 0 60]);
 % Add title and axes to the figure
 xlabel('X'); ylabel('Y'); zlabel('Z');
 title({'Live position of 3-link-arm'});

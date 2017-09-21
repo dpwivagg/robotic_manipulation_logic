@@ -6,11 +6,11 @@
 function TM = forPosKinematics(q0, q1, q2)
 % Define the DH parameters for the arm 
 % For link 1
-l1.a = 0; l1.alpha = 90; l1.d = 1; l1.theta = q0; 
+l1.a = 0; l1.alpha = 90; l1.d = 20; l1.theta = q0; 
 % For link 2
-l2.a = 1; l2.alpha = 0;  l2.d = 0; l2.theta = q1;
+l2.a = 17; l2.alpha = 0;  l2.d = 0; l2.theta = q1;
 % For link 3
-l3.a = 1; l3.alpha = 0;  l3.d = 0; l3.theta = q2;
+l3.a = 20; l3.alpha = 0;  l3.d = 0; l3.theta = q2;
 % For tool tip
 tt.a = 0; tt.alpha = 0;  tt.d = 0; tt.theta = 90;
 

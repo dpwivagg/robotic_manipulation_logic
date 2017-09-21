@@ -1,5 +1,5 @@
 % This function takes an RGB image and returns the image with centroid
-function centroids = processImage(RGB)
+function centroid = processImage(RGB)
 % Crop the image to just the workspace
 %RGB = imcrop(RGB, [470 258 1020 822]);
 
@@ -48,16 +48,22 @@ binary(~mask) = 0;
 
 % Calculate centroid, minor and major axis length
 properties = regionprops(binary,'Centroid','MajorAxisLength','MinorAxisLength');
-% Put all centroids in one matrix
-centroids = properties.Centroid;
+% Try to put centroid into matrix to pass back
+try
+    centroid = properties.Centroid;
+% If unable to calculate centroid, default to (1,1) and produce a warning
+catch
+    warning('No centroid located, defaulting to (1,1)');
+    centroid = [1,1];
+end
 % Calculate the diameter for the object, use diameter to calculate radius
 diameters = mean([properties.MajorAxisLength properties.MinorAxisLength],2);
 radii = diameters/2;
 
-% Display
-imshow(binary);
-hold on
-plot(centroids(:,1), centroids(:,2), 'b*')
-viscircles(centroids,radii);
-hold off
+% % Display
+% imshow(binary);
+% hold on
+% plot(centroids(:,1), centroids(:,2), 'b*')
+% viscircles(centroids,radii);
+% hold off
 end

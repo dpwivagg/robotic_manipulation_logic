@@ -11,15 +11,15 @@ q0 = atan2(point.y, point.x);
 r = sqrt(point.x^2 + point.y^2);
 
 % Calculate the angle of the second link 
-q2 = acos(((point.x^2 + point.z^2)-(l2^2 + l3^2)) / (2 * l2 * l3));
+q2 = acos(((r^2 + (l1 - point.z)^2)-(l2^2 + l3^2)) / (2 * l2 * l3));
 
 % Calculate the angle between the x axis of link one and the line
 % connecting the origin of link one to the point
-B = atan2(point.z, r);
+B = atan2((l1 - point.z), r);
 
 % Calculate the angle between the first link and the line
 % connecting the origin of link one to the point
-gamma = acos((point.z^2 + r^2 + l2^2 - l3^2)/(2 * l1 * sqrt(point.z^2 + r^2)));
+gamma = acos(((l1 - point.z)^2 + r^2 + l2^2 - l3^2)/(2 * l1 * sqrt(point.z^2 + r^2)));
 
 % Calculate the angle of the first link
 if q2 < 0
@@ -27,6 +27,10 @@ if q2 < 0
 else 
     q1 = B + gamma;
 end
+
+q0 = q0 * (pi/180);
+q1 = q1 * (pi/180);
+q2 = q2 * (pi/180);
 
 joints = [q0; q1; q2];
 end
