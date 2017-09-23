@@ -38,15 +38,52 @@ pp.command(39, gains);
 toc
 
 %% Initial values for position command-lift to take a picture
-% Set initial PID setpoints
+%Create an array of 32 bit floaing point zeros to load an pass to the
+%packet processor
 values = zeros(15, 1, 'single');
-% Position joint 0 ranges from -980 to 1250
-% Position joint 1 ranges from -200 to 1000
-% Position joint 2 ranges from -330 to 2400
+%Fill the PID control command packet with inital values:
+% Send setpoint for joint 0 in raw encoder ticks, plus velocity and
+% torque targets
+% Position ranges from -980 to 1250
+values(1) = 0;
+values(2) = 0;
+values(3) = 0;
+% Position ranges from -200 to 1000
+values(4) = 40;
+values(5) = 0;
+values(6) = 0;
+% Send setpoint for joint 2 in raw encoder ticks, plus velocity and
+% torque targets
+% Position ranges from -330 to 2400
+values(7) = 0;
+values(8) = 0;
+values(9) = 0;
 tic
 pp.command(38, values);
 toc
 
+% %% Take a camera snapshot to start with
+% % take snapshot of workspace
+% img = snapshot(cam);
+% 
+% % crop enhance and change image and bring back centrioid cordinates
+% centroidpix = processImage(img);
+% 
+% % convert pixels to xy
+% [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
+% objposition = [xcord;ycord;0];
+
+%% Set up initial velocity setpoint
+
+% Calculate the transformation matrix of the arm
+TM = forPosKinematics(0, 0, -90);
+
+% Create a vector of just the tip position
+TP = [TM(1,4);TM(2,4);TM(3,4)];
+    xcord = 0; ycord = 1;
+     objposition = [xcord;ycord;0];
+% Create desired velocity setpoints and direction
+taskV1 = TP - objposition;
 
 %% Begin program loop
 genesis = tic;
@@ -73,14 +110,14 @@ while 1
      dlmwrite(csv, transpose(returnValues), '-append');     
      
      % Take encoder ticks and translate to degrees
-     q(1) = 0 - (returnValues(1) / 12);
-     q(2) = (returnValues(4) / 12);
-     q(3) = 0 - (returnValues(7) / 12);
+     q0 = 0 - (returnValues(1) / 12);
+     q1 = (returnValues(4) / 12);
+     q2 = 0 - (returnValues(7) / 12);
      
      % Calculate the position of the elbow, 3x1 vector
-     posElbow = eCoordinate(l1, l2, q(1), q(2));
+     posElbow = eCoordinate(l1, l2, q0, q1);
      % Calculate the position of the tool tip, 3x1 vector
-     posToolTip = pCoordinate(l1, l2, l3, q(1), q(2), q(3) + 90);
+     posToolTip = pCoordinate(l1, l2, l3, q0, q1, q2 + 90);
      % Combine coordinates of elbow and tip to create one vector for csv
      posArm = [posElbow posToolTip];
      % Write the cartesian coordinates of arm to csv file
@@ -90,7 +127,7 @@ while 1
      clf;
      
      % Calculate the transformation matrix of the arm
-     TM = forPosKinematics(q(1), q(2), -(q(3)+90));
+     TM = forPosKinematics(q0, q1, -(q2+90));
      % Create the rotation matrix out of the transformation matrix
      RM = [TM(1,1),TM(1,2),TM(1,3);...
            TM(2,1),TM(2,2),TM(2,3);...
@@ -104,7 +141,7 @@ while 1
      threeLinkPlot(l1, l2, posElbow, TP);
     
      % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q(1), q(2), (q(3)+90)));
+     jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));
      
      % Adjust the link lengths to actual values, shift the frame from robot
      % to tip home
