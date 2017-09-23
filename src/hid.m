@@ -29,6 +29,7 @@ l3 = 20;
 % Create the xyz position array
 xyzPos = [];
 
+pointMatrix = [17 0 40; 20 16 6; 20 -16 6; 17 0 40];
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
 
@@ -50,8 +51,6 @@ values = zeros(15, 1, 'single');
 tic
 pp.command(38, values);
 toc
-
-pointMatrix = [17 0 37; 28 13 18; 28 -13 18];
 
 
 %% Begin program loop
@@ -109,7 +108,8 @@ while 1
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
-         if(point > size(pointMatrix, 1)
+         pause(0.5);
+         if(point > size(pointMatrix, 1))
              break;
          end
      end
@@ -121,19 +121,20 @@ while 1
 end
  
 %% Clean up and do final plotting 
-pp.shutdown()
-clear('cam');
-clear java;
 
 % Read in the angles from the CSV file and plot them
-xEpos = dlmread('armPos.csv',' ',[0 0 15 0]);
-yEpos = dlmread('armPos.csv',' ',[0 1 15 1]);
-zEpos = dlmread('armPos.csv',' ',[0 2 15 2]);
+xEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 0 15 0]);
+yEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 1 15 1]);
+zEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 2 15 2]);
 xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
 yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
 zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
-xPpos = (dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
-yPpos = dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
-zPpos = dlmread('pipPos.csv',' ',[0 2 19 2]);
+xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
+yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
+zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
 
 pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
+
+pp.shutdown()
+clear('cam');
+clear java;
