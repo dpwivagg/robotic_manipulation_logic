@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 30;
+runtime = 15;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -26,18 +26,22 @@ l1 = 20;
 l2 = 17;
 l3 = 20;
 
+% Create the xyz position array
+xyzPos = [];
+
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
 
 %% KP Tuning Parameters
 % Set KP, KI, KD for joints 0, 1, and 2 [P1;I1;D1;P2;I2;D2;P3;I3;D3]
-gains = [0.0025; 0; 0.015; 0.003; 0.03; 0.0005; 0.03; 0.003; 0; 0.001];
+gains = [0.0025; 0; 0.015; 0.003; 0.0005; 0.03; 0.003; 0; 0.001;...
+    0;0;0;0;0;0];
 % Set the PID gains using the packet processor
 tic
 pp.command(39, gains);
 toc
 
-%% Initial values for position command-lift to take a picture
+%% Initial values for position command
 % Set initial PID setpoints
 values = zeros(15, 1, 'single');
 % Position joint 0 ranges from -980 to 1250
@@ -47,23 +51,16 @@ tic
 pp.command(38, values);
 toc
 
+pointMatrix = [17 0 37; 28 13 18; 28 -13 18];
+
 
 %% Begin program loop
+point = 1;
 genesis = tic;
 while 1
-     % take snapshot of workspace
-     img = snapshot(cam);
-
-     % crop enhance and change image and bring back centrioid cordinates
-     centroidpix = processImage(img);
-
-     % convert pixels to xy
-     [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
-      %  xcord = 5; ycord = 0;
-     objposition = [xcord ycord 0];
-     % Capture the position of the Pip as it moves through the workspace
-     dlmwrite('pipPos.csv',objposition,'-append','delimiter',' ');
     
+% Everything will break if we don't do a dlmwrite
+     dlmwrite('pipPos.csv',[0 0 0],'-append','delimiter',' ');
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -89,6 +86,11 @@ while 1
      % Clear the live link plot
      clf;
      
+     newSetpoint = invPosKinematics(pointMatrix(point, :));
+     values(1) = newSetpoint(1) * 12;
+     values(4) = newSetpoint(2) * 12;
+     values(7) = newSetpoint(3) * 12;
+
      % Calculate the transformation matrix of the arm
      TM = forPosKinematics(q(1), q(2), -(q(3)+90));
      % Create the rotation matrix out of the transformation matrix
@@ -99,33 +101,19 @@ while 1
      RMt = transpose(RM);
      % Create a vector of just the tip position
      TP = [TM(1,4);TM(2,4);TM(3,4)];
+     
+     xyzPos = [xyzPos; transpose(TP)];
      % Plot the link in real time using transformation matrices for arm
      % positions
      threeLinkPlot(l1, l2, posElbow, TP);
-    
-     % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q(1), q(2), (q(3)+90)));
      
-     % Adjust the link lengths to actual values, shift the frame from robot
-     % to tip home
-     TP(1) = (TP(1) * 20) - 20;
-     TP(2) = TP(2) * 17;
-     TP(3) = TP(3) * 20;
-     
-     taskV1 = TP - objposition;
-     
-     % Calculate the error (distance between setpoint and actual)
-     % Mutliply it by KP constant
-     error = 1.5 * norm(TP - objposition);
-     
-     % Convert the velocity to a position setpoint and multiply by gain
-     newSetpoint =  error * jointV1 * toc;
-     
-     values(1) = values(1) + newSetpoint(1)*12;
-     values(4) = 80;%values(4) + newSetpoint(2)*12;
-     values(7) = values(7) + newSetpoint(3)*12;
-     dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
-     
+     if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
+         point = point + 1;
+         if(point > size(pointMatrix, 1)
+             break;
+         end
+     end
+
      % if the total elapsed time is greater than desired, end the loop
      if(toc(genesis) > runtime) 
          break;
@@ -138,12 +126,12 @@ clear('cam');
 clear java;
 
 % Read in the angles from the CSV file and plot them
-xEpos = dlmread('armPos.csv',' ',[0 0 39 0]);
-yEpos = dlmread('armPos.csv',' ',[0 1 39 1]);
-zEpos = dlmread('armPos.csv',' ',[0 2 39 2]);
-xTpos = dlmread('armPos.csv',' ',[0 3 39 3]);
-yTpos = dlmread('armPos.csv',' ',[0 4 39 4]);
-zTpos = dlmread('armPos.csv',' ',[0 5 39 5]);
+xEpos = dlmread('armPos.csv',' ',[0 0 15 0]);
+yEpos = dlmread('armPos.csv',' ',[0 1 15 1]);
+zEpos = dlmread('armPos.csv',' ',[0 2 15 2]);
+xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
+yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
+zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
 xPpos = (dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
 yPpos = dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
 zPpos = dlmread('pipPos.csv',' ',[0 2 19 2]);
