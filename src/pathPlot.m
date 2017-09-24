@@ -30,7 +30,7 @@ f = plot3(xEpos, yEpos, zEpos,...
 hold on;                   % Hold on to objects in the axes
 box on;                    % Put a box around axes
 grid on;                   % Put gridlines on the figure
-axis([-2 2 -2 2 0 3]);     % Set axes limits
+%axis([-2 2 -2 2 0 3]);     % Set axes limits
 xlabel('X'); ylabel('Y'); zlabel('Z'); % Add labels to the axes
 title({'Angle of link over time'}); % Add title to the figure
 view(37.5, 30);            % Rotate the plot to 'face forward'

@@ -28,7 +28,7 @@ l3 = 20;
 
 % Create the xyz position array
 xyzPos = [];
-
+qp = [0 0 0];
 pointMatrix = [17 0 40; 20 16 6; 20 -16 6; 17 0 40];
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
@@ -52,10 +52,11 @@ tic
 pp.command(38, values);
 toc
 
-
 %% Begin program loop
+previoustime = 0;
 point = 1;
 genesis = tic;
+timeinterval = 0;
 while 1
     
 % Everything will break if we don't do a dlmwrite
@@ -72,7 +73,7 @@ while 1
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
      q(3) = 0 - (returnValues(7) / 12);
-     
+     qp = [qp; q(1), q(2), q(3)];
      % Calculate the position of the elbow, 3x1 vector
      posElbow = eCoordinate(l1, l2, q(1), q(2));
      % Calculate the position of the tool tip, 3x1 vector
@@ -102,6 +103,9 @@ while 1
      TP = [TM(1,4);TM(2,4);TM(3,4)];
      
      xyzPos = [xyzPos; transpose(TP)];
+     timer = toc;
+     timeinterval = [timeinterval(1,:) previoustime+timer];
+     previoustime = previoustime + timer;
      % Plot the link in real time using transformation matrices for arm
      % positions
      threeLinkPlot(l1, l2, posElbow, TP);
@@ -119,7 +123,7 @@ while 1
          break;
      end
 end
- 
+
 %% Clean up and do final plotting 
 
 % Read in the angles from the CSV file and plot them
@@ -132,9 +136,10 @@ zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
 xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
 yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
 zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
-
+s = transpose(qp);
 pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
-
+%plot(timeinterval, s(1,:),timeinterval, s(2,:),'--', timeinterval, s(3,:),'p:');
+%grid on;
 pp.shutdown()
 clear('cam');
 clear java;
