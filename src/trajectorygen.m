@@ -17,6 +17,19 @@ A = inv(matrix);
  % calculate a0 a1 a2 and a3
 traj = A*B;
 
-for 
-t=traj(1)+
+% intalize time, position, velocity and acceleration
+time = tstart;
+pos = postart;
+velo = vstart;
+acc = 2*traj(3) + 6*traj(4)*tstart;
+t = [tstart, pos, velo, acc];
+ 
+% generate n by 4 matrix for trajectory
+for a = tstart+tstep:tstep:tstop
+tpos=traj(1)+traj(2)*a+traj(3)*a^2+traj(4)*a^3;
+tvel = traj(2)+2*traj(3)*a+3*traj(4)*a^2;
+tacc = 2*traj(3) +  6*traj(4)*a;
+t = [t; a, tpos, tvel, tacc];
+end
+% end function
 end
