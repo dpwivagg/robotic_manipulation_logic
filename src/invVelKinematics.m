@@ -1,8 +1,8 @@
 % This function takes a 3x1 task space tip velocity vector and the three
 % current joint angles and returns the three joint angular velocities
 function iVM = invVelKinematics(tipV, q0, q1, q2)
-% Define link lengths
-l1 = 20; l2 = 17; l3 = 20;
+% Get global link lengths
+linkVal = getLinkValues();
 
 % Calculate the symbolic Jacobian
 syms symq0 symq1 symq2 syml1 syml2 syml3
@@ -19,7 +19,7 @@ q1 = q1 * (pi/180);
 q2 = q2 * (pi/180);
 
 % Substitute values into symbolic Jacobian
-iJ = subs(iJ, [symq0 symq1 symq2 syml1 syml2 syml3], [q0 q1 q2 l1 l2 l3]);
+iJ = subs(iJ, [symq0 symq1 symq2 syml1 syml2 syml3], [q0 q1 q2 linkVal(1) linkVal(2) linkVal(3)]);
 
 % Calculate angular velocity at each joint by multiplying the inverse 
 % Jacobian by the tip velocity vector 

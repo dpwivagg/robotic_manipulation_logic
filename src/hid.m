@@ -18,13 +18,9 @@ if(~exist('cam','var'))
     cam = webcam('USB 2.0 Camera');
 end
 
-% Make an empty plot
-createPlot;
-
 % Set values for the lengths of link 1, 2, and 3
-l1 = 20;
-l2 = 17;
-l3 = 20;
+global links
+links = [20 17 20];
 
 % Create the xyz position array
 xyzPos = [];
@@ -75,9 +71,9 @@ while 1
      q(3) = 0 - (returnValues(7) / 12);
      qp = [qp; q(1), q(2), q(3)];
      % Calculate the position of the elbow, 3x1 vector
-     posElbow = eCoordinate(l1, l2, q(1), q(2));
+     posElbow = eCoordinate(q(1), q(2));
      % Calculate the position of the tool tip, 3x1 vector
-     posToolTip = pCoordinate(l1, l2, l3, q(1), q(2), q(3) + 90);
+     posToolTip = pCoordinate(q(1), q(2), q(3) + 90);
      % Combine coordinates of elbow and tip to create one vector for csv
      posArm = [posElbow posToolTip];
      % Write the cartesian coordinates of arm to csv file
@@ -108,7 +104,7 @@ while 1
      previoustime = previoustime + timer;
      % Plot the link in real time using transformation matrices for arm
      % positions
-     threeLinkPlot(l1, l2, posElbow, TP);
+     threeLinkPlot(posElbow, TP);
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;

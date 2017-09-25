@@ -3,13 +3,15 @@
 % of a 3-DOF arm with link lengths defined below.
 
 % This function require function pCoordinate.m
-function threeLinkPlot(l1, l2, p2, p3)
+function threeLinkPlot(p2, p3)
+% Get global link lengths
+linkVal = getLinkValues();
 
 % Origin point, 3x1
 p0 = [0; 0; 0];
 
 % First link point, 3x1
-p1 = [0; 0; 20];
+p1 = [0; 0; linkVal(3)];
 % Vectors from p0 to p1 in x, y, z
 x1 = [p0(1) p1(1)];
 y1 = [p0(2) p1(2)];
@@ -40,19 +42,19 @@ zS2 = [p0(3) p0(3)];
 theta = 0:pi/50:2*pi;
 
 % For the xy plane starting at the shoulder
-xyplane.x = (l1 + l2) * cos(theta) + p1(1);
-xyplane.y = (l1 + l2) * sin(theta) + p1(2);
-xyplane.z = ones(1,numel(xyplane.x));
+xyplane.x = (linkVal(1) + linkVal(2)) * cos(theta) + p1(1);
+xyplane.y = (linkVal(1) + linkVal(2)) * sin(theta) + p1(2);
+xyplane.z = ones(1,numel(xyplane.x)) * p1(3);
 
 % For the xz plane starting at the shoulder
-xzplane.x = (l1 + l2) * cos(theta) + p1(1);
+xzplane.x = (linkVal(1) + linkVal(2)) * cos(theta) + p1(1);
 xzplane.y = zeros(1,numel(xzplane.x));
-xzplane.z = (l1 + l2) * sin(theta) + p1(3);
+xzplane.z = (linkVal(1) + linkVal(2)) * sin(theta) + p1(3);
 
 % For the yz plane starting at the shoulder
 yzplane.x = zeros(1,numel(xzplane.x));
-yzplane.y = (l1 + l2) * cos(theta) + p1(2);
-yzplane.z = (l1 + l2) * sin(theta) + p1(3);
+yzplane.y = (linkVal(1) + linkVal(2)) * cos(theta) + p1(2);
+yzplane.z = (linkVal(1) + linkVal(2)) * sin(theta) + p1(3);
 
 % Plot 
 plot3(x1, y1, z1, '-b', ...

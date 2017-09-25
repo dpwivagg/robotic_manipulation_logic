@@ -7,9 +7,8 @@ if(point(1) > 37 || point(1) < 0 || point(2) > 37 || point(2) < -37 || point(3) 
     clear java;
 end
 
-l1 = 20;
-l2 = 17;
-l3 = 20;
+% Get global link lengths
+linkVal = getLinkValues();
 
 % Calculate the angle of the plane for the shoulder-elbow 2DOF arm,
 % corresponding to the angle of the base link
@@ -20,15 +19,15 @@ r = sqrt(point(1)^2 + point(2)^2);
 
 
 % Calculate the angle of the second link 
-q2 = acos(((r^2 + (l1 - point(3))^2)-(l2^2 + l3^2)) / (2 * l2 * l3));
+q2 = acos(((r^2 + (linkVal(1) - point(3))^2)-(linkVal(2)^2 + linkVal(3)^2)) / (2 * linkVal(2) * linkVal(3)));
 
 % Calculate the angle between the x axis of link one and the line
 % connecting the origin of link one to the point
-B = atan2((l1 - point(3)), r);
+B = atan2((linkVal(1) - point(3)), r);
 
 % Calculate the angle between the first link and the line
 % connecting the origin of link one to the point
-gamma = acos(((l1 - point(3))^2 + r^2 + l2^2 - l3^2)/(2 * l2 * sqrt((l1 - point(3))^2 + r^2)));
+gamma = acos(((linkVal(1) - point(3))^2 + r^2 + linkVal(2)^2 - linkVal(3)^2)/(2 * linkVal(2) * sqrt((linkVal(1) - point(3))^2 + r^2)));
 
 % Calculate the angle of the first link
 % if q2 < 0
