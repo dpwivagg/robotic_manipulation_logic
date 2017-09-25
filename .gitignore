@@ -1,1 +1,5 @@
 src/*.csv
+src/*.fig
+src/*.jpg
+src/*.bmp
+src/*.old
