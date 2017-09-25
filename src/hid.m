@@ -104,7 +104,7 @@ while 1
      previoustime = previoustime + timer;
      % Plot the link in real time using transformation matrices for arm
      % positions
-     %threeLinkPlot(posElbow, TP);
+     threeLinkPlot(posElbow, TP);
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
@@ -133,8 +133,8 @@ xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
 yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
 zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
 s = transpose(qp);
-%pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
-plot(timeinterval(1,2:end), xTpos,timeinterval(1,2:end), yTpos,'--', timeinterval(1,2:end), zTpos,'p:');
+pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
+%plot(timeinterval(1,2:end), xTpos,timeinterval(1,2:end), yTpos,'--', timeinterval(1,2:end), zTpos,'p:');
 grid on;
 pp.shutdown()
 clear('cam');
