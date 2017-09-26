@@ -7,111 +7,59 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 30;
+runtime = 15;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
 
 % Initialize camera
-cam = webcam('USB 2.0 Camera');
-
-% Make an empty plot
-createPlot;
+if(~exist('cam','var'))
+    cam = webcam('USB 2.0 Camera');
+end
 
 % Set values for the lengths of link 1, 2, and 3
-l1 = 1;
-l2 = 1;
-l3 = 1;
+global links
+links = [20 17 20];
+
+% Create the xyz position array
+xyzPos = [];
+qp = [0 0 0];
+
+% Define the matrix of setpoints
+desiredSetpoints = [20 0 37; 25 15 20; 25 -15 20];
+pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
-delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv';
+delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv'; delete 'armPosetpoints.csv';
 
 %% KP Tuning Parameters
-% Set KP, KI, KD for joints 0, 1, and 2
-gains = zeros(15, 1, 'single');
-% kp, ki, kd for joint 0
-gains(1) = 0.0025;
-gains(2) = 0;
-gains(3) = 0.015;
-% kp, ki, kd for joint 1
-gains(4) = 0.003;
-gains(5) = 0.0005;
-gains(6) = 0.03;
-% kp, ki, kd for joint 2
-gains(7) = 0.003;
-gains(8) = 0;
-gains(9) = 0.001;
+% Set KP, KI, KD for joints 0, 1, and 2 [P1;I1;D1;P2;I2;D2;P3;I3;D3]
+gains = [0.0025; 0; 0.015; 0.003; 0.0005; 0.03; 0.003; 0; 0.001;...
+    0;0;0;0;0;0];
 % Set the PID gains using the packet processor
 tic
 pp.command(39, gains);
 toc
 
-%% Initial values for position command-lift to take a picture
-%Create an array of 32 bit floaing point zeros to load an pass to the
-%packet processor
+%% Initial values for position command
+% Set initial PID setpoints
 values = zeros(15, 1, 'single');
-%Fill the PID control command packet with inital values:
-% Send setpoint for joint 0 in raw encoder ticks, plus velocity and
-% torque targets
-% Position ranges from -980 to 1250
-values(1) = 0;
-values(2) = 0;
-values(3) = 0;
-% Send setpoint for joint 1 in raw encoder ticks, plus velocity and
-% torque targets
-% Position ranges from -200 to 1000
-values(4) = 40;
-values(5) = 0;
-values(6) = 0;
-% Send setpoint for joint 2 in raw encoder ticks, plus velocity and
-% torque targets
-% Position ranges from -330 to 2400
-values(7) = 0;
-values(8) = 0;
-values(9) = 0;
+% Position joint 0 ranges from -980 to 1250
+% Position joint 1 ranges from -200 to 1000
+% Position joint 2 ranges from -330 to 2400
 tic
 pp.command(38, values);
 toc
 
-%% Take a camera snapshot to start with
-% take snapshot of workspace
-img = snapshot(cam);
-
-% crop enhance and change image and bring back centrioid cordinates
-centroidpix = processImage(img);
-
-% convert pixels to xy
-[xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
-objposition = [xcord;ycord;0];
-
-%% Set up initial velocity setpoint
-
-% Calculate the transformation matrix of the arm
-TM = forPosKinematics(0, 0, -90);
-
-% Create a vector of just the tip position
-TP = [TM(1,4);TM(2,4);TM(3,4)];
-    xcord = 0; ycord = 1;
-     objposition = [xcord;ycord;0];
-% Create desired velocity setpoints and direction
-taskV1 = TP - objposition;
-
 %% Begin program loop
+previoustime = 0;
+point = 1;
 genesis = tic;
+timeinterval = 0;
 while 1
-     % take snapshot of workspace
-     img = snapshot(cam);
-
-     % crop enhance and change image and bring back centrioid cordinates
-     centroidpix = processImage(img);
-
-     % convert pixels to xy
-     [xcord,ycord] = mn2xy(centroidpix(1,1),centroidpix(1,2));
-      %  xcord = 5; ycord = 0;
-     objposition = [xcord ycord 0];
-     % Capture the position of the Pip as it moves through the workspace
-     dlmwrite('pipPos.csv',objposition,'-append','delimiter',' ');
     
+% Everything will break if we don't do a dlmwrite
+     dlmwrite('pipPos.csv',[0 0 0],'-append','delimiter',' ');
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
@@ -121,14 +69,14 @@ while 1
      dlmwrite(csv, transpose(returnValues), '-append');     
      
      % Take encoder ticks and translate to degrees
-     q0 = 0 - (returnValues(1) / 12);
-     q1 = (returnValues(4) / 12);
-     q2 = 0 - (returnValues(7) / 12);
-     
+     q(1) = 0 - (returnValues(1) / 12);
+     q(2) = (returnValues(4) / 12);
+     q(3) = 0 - (returnValues(7) / 12);
+     qp = [qp; q(1), q(2), q(3)];
      % Calculate the position of the elbow, 3x1 vector
-     posElbow = eCoordinate(l1, l2, q0, q1);
+     posElbow = eCoordinate(q(1), q(2));
      % Calculate the position of the tool tip, 3x1 vector
-     posToolTip = pCoordinate(l1, l2, l3, q0, q1, q2 + 90);
+     posToolTip = pCoordinate(q(1), q(2), q(3) + 90);
      % Combine coordinates of elbow and tip to create one vector for csv
      posArm = [posElbow posToolTip];
      % Write the cartesian coordinates of arm to csv file
@@ -137,8 +85,13 @@ while 1
      % Clear the live link plot
      clf;
      
+     newSetpoint = invPosKinematics(pointMatrix(point, :));
+     values(1) = newSetpoint(1) * 12;
+     values(4) = newSetpoint(2) * 12;
+     values(7) = newSetpoint(3) * 12;
+
      % Calculate the transformation matrix of the arm
-     TM = forPosKinematics(q0, q1, -(q2+90));
+     TM = forPosKinematics(q(1), q(2), -(q(3)+90));
      % Create the rotation matrix out of the transformation matrix
      RM = [TM(1,1),TM(1,2),TM(1,3);...
            TM(2,1),TM(2,2),TM(2,3);...
@@ -147,53 +100,45 @@ while 1
      RMt = transpose(RM);
      % Create a vector of just the tip position
      TP = [TM(1,4);TM(2,4);TM(3,4)];
+     dlmwrite('armPosetpoints.csv',transpose(TP),'-append','delimiter',' ');
+     xyzPos = [xyzPos; transpose(TP)];
+     timer = toc;
+     timeinterval = [timeinterval(1,:) previoustime+timer];
+     previoustime = previoustime + timer;
      % Plot the link in real time using transformation matrices for arm
      % positions
-     %threeLinkPlot(l1, l2, posElbow, TP);
-    
-     % Calculate the inverse velocity kinematics
-     jointV1 = double(invVelKinematics(taskV1, q0, q1, (q2+90)));
+     threeLinkPlot(posElbow, TP);
      
-     % Adjust the link lengths to actual values, shift the frame from robot
-     % to tip home
-     TP(1) = (TP(1) * 20) - 20;
-     TP(2) = TP(2) * 17;
-     TP(3) = TP(3) * 20;
-     
-     taskV1 = TP - objposition;
-     
-     % Calculate the error (distance between setpoint and actual)
-     % Mutliply it by KP constant
-     error = 1.5 * norm(TP - objposition);
-     
-     % Convert the velocity to a position setpoint and multiply by gain
-     newSetpoint =  error * jointV1 * toc;
-     
-     values(1) = values(1) + newSetpoint(1)*12;
-     values(4) = 80;%values(4) + newSetpoint(2)*12;
-     values(7) = values(7) + newSetpoint(3)*12;
-     dlmwrite('setpoints.csv',newSetpoint,'-append','delimiter',' ');
-     
+     if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
+         point = point + 1;
+        % pause(0.5);
+         if(point > size(pointMatrix, 1))
+             break;
+         end
+     end
+
      % if the total elapsed time is greater than desired, end the loop
      if(toc(genesis) > runtime) 
          break;
      end
 end
- 
+
 %% Clean up and do final plotting 
+
+% Read in the angles from the CSV file and plot them
+xEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 0 15 0]);
+yEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 1 15 1]);
+zEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 2 15 2]);
+xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
+yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
+zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
+xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
+yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
+zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
+s = transpose(qp);
+pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
+%plot(timeinterval(1,2:end), xTpos,timeinterval(1,2:end), yTpos,'--', timeinterval(1,2:end), zTpos,'p:');
+grid on;
 pp.shutdown()
 clear('cam');
 clear java;
-
-% Read in the angles from the CSV file and plot them
-xEpos = dlmread('armPos.csv',' ',[0 0 39 0]);
-yEpos = dlmread('armPos.csv',' ',[0 1 39 1]);
-zEpos = dlmread('armPos.csv',' ',[0 2 39 2]);
-xTpos = dlmread('armPos.csv',' ',[0 3 39 3]);
-yTpos = dlmread('armPos.csv',' ',[0 4 39 4]);
-zTpos = dlmread('armPos.csv',' ',[0 5 39 5]);
-xPpos = (dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
-yPpos = dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
-zPpos = dlmread('pipPos.csv',' ',[0 2 19 2]);
-
-pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
