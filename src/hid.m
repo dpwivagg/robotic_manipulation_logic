@@ -24,7 +24,11 @@ links = [20 17 20];
 % Create the xyz position array
 xyzPos = [];
 qp = [0 0 0];
-pointMatrix = dlmread('armPosetpoints_toset.csv');
+
+% Define the matrix of setpoints
+desiredSetpoints = [20 0 37; 25 15 20; 25 -15 20];
+pointMatrix = findTotalTrajectory(desiredSetpoints);
+
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv'; delete 'armPosetpoints.csv';
 

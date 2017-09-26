@@ -1,0 +1,16 @@
+% This function takes a matrix of desired setpoints and generates a
+% trajectory that passes through all of them
+% pointMatrix is a nx3 matrix with columns of x, y, and z setpoints
+% TODO: Add a time argument that allows the user to specify the amount of
+% time for the total trajectory. We will have to assume that each setpoint
+% has the same desired time unless we expand to set them individually
+
+function pointMatrix = findTotalTrajectory(points)
+
+    lastA = [0 0 0];
+    for k : size(points, 1)
+        A = points(k,:);
+        x = trajectorygen(0,2,0,0,
+        lastA = A;
+    end
+end
