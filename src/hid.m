@@ -1,4 +1,3 @@
-% TODO : Update link lengths through the code to do accurate error calcs
 javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
