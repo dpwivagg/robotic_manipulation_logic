@@ -126,9 +126,6 @@ end
 %% Clean up and do final plotting 
 
 % Read in the angles from the CSV file and plot them
-xEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 0 15 0]);
-yEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 1 15 1]);
-zEpos = [0 0 0];%dlmread('armPos.csv',' ',[0 2 15 2]);
 xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
 yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
 zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
