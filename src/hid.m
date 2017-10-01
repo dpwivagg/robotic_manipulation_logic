@@ -21,15 +21,16 @@ end
 global links
 links = [20 17 20];
 
-% Create the xyz position array
+% Create the xyz position array to store values
 xyzPos = [];
+returnedvalues = [];
 
 % Define the matrix of setpoints
 desiredSetpoints = [20 0 37; 25 15 20; 25 -15 20];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
-delete 'values.csv'; delete 'armPos.csv'; delete 'pipPos.csv'; delete 'armPosetpoints.csv';
+delete 'values.csv'; delete 'armPosetpoints.csv';
 
 %% KP Tuning Parameters
 % Set KP, KI, KD for joints 0, 1, and 2 [P1;I1;D1;P2;I2;D2;P3;I3;D3]
@@ -57,16 +58,14 @@ genesis = tic;
 
 while 1
     
-% Everything will break if we don't do a dlmwrite
-     dlmwrite('pipPos.csv',[0 0 0],'-append','delimiter',' ');
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
      toc
      
      pause(0.1) %timeit(returnValues)
-     dlmwrite(csv, transpose(returnValues), '-append');     
      
+     returnedvalues = [returnedvalues; transpose(returnValues)];
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
@@ -93,8 +92,7 @@ while 1
      TMe = forPosKinematics(q(1), q(2), -(q(3)+90), 0);
      TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
      TP = [TM(1,4);TM(2,4);TM(3,4)];  
-     
-     dlmwrite('armPosetpoints.csv',transpose(TP),'-append','delimiter',' ');
+      
      xyzPos = [xyzPos; transpose(TP)];   
      
      % Plot the link in real time using transformation matrices for arm
@@ -116,16 +114,14 @@ while 1
 end
 
 %% Clean up and do final plotting 
-
+dlmwrite(csv, returnedvalues, '-append');    
+dlmwrite('armPosetpoints.csv',xyzPos,'-append','delimiter',' ');
 % Read in the angles from the CSV file and plot them
 xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
 yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
 zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
-xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
-yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
-zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
 
-pathPlot(xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
+pathPlot(xTpos, yTpos, zTpos);
 
 grid on;
 pp.shutdown()

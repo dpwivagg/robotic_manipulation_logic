@@ -1,6 +1,6 @@
 % Function pathPlot takes in x, y, and z positions of the arm elbow and tip
 % from a .csv file and creates a 3D plot of the path
-function f = pathPlot(xTpos, yTpos, zTpos, xPpos, yPpos, zPpos)
+function f = pathPlot(xTpos, yTpos, zTpos)
 % Get global link lengths
 linkVal = getLinkValues();
 
@@ -25,7 +25,6 @@ yzplane.z = (linkVal(1) + linkVal(2)) * sin(theta) + linkVal(3);
 % Create a plot for the position of the link over time
 clf;
 f = plot3(xTpos, yTpos, zTpos,...
-          xPpos, yPpos, zPpos,...
           xyplane.x, xyplane.y, xyplane.z, 'k:',...
           xzplane.x, xzplane.y, xzplane.z, 'k:',...
           yzplane.x, yzplane.y, yzplane.z, 'k:');
