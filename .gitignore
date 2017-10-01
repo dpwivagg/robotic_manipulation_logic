@@ -3,3 +3,6 @@ src/*.fig
 src/*.jpg
 src/*.bmp
 src/*.old
+src/*.m.old
+src/*.m~
+src/*.mat
