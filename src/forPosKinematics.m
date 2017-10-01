@@ -3,7 +3,7 @@
 % transformation matrix representing the forward position kinematics of the
 % arm. This function takes in the angles for the base, shoulder, and elbow
 % joints and returns a 4x4 transformation matrix
-function TM = forPosKinematics(q0, q1, q2)
+function TM = forPosKinematics(q0, q1, q2, mode)
 % Get global link lengths
 linkVal = getLinkValues();
 
@@ -24,5 +24,20 @@ M3 = fourByFourForPos(l3.a, l3.alpha, l3.d, l3.theta);
 M4 = fourByFourForPos(tt.a, tt.alpha, tt.d, tt.theta);
 
 % Multiply the matrices together to create a final transformation matrix
+if (mode == 1)
 TM = M1 * M2 * M3 * M4;
+else
+TM = M1 * M2;
+end
+end
+
+% This function creates a 4x4 transformation matrix for a joint using the
+% DH parameters for its link.
+function M = fourByFourForPos(a, alpha, d, theta)
+
+M = [cosd(theta), (-sind(theta) * cosd(alpha)), (sind(theta) * sind(alpha)), (a * cosd(theta));...
+     sind(theta), (cosd(theta) * cosd(alpha)), (-cosd(theta) * sind(alpha)), (a * sind(theta));...
+     0, sind(alpha), cosd(alpha), d;...
+     0, 0, 0, 1];
+
 end

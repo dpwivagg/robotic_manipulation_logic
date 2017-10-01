@@ -23,7 +23,6 @@ links = [20 17 20];
 
 % Create the xyz position array
 xyzPos = [];
-qp = [0 0 0];
 
 % Define the matrix of setpoints
 desiredSetpoints = [20 0 37; 25 15 20; 25 -15 20];
@@ -52,10 +51,10 @@ pp.command(38, values);
 toc
 
 %% Begin program loop
-previoustime = 0;
+
 point = 1;
 genesis = tic;
-timeinterval = 0;
+
 while 1
     
 % Everything will break if we don't do a dlmwrite
@@ -72,15 +71,6 @@ while 1
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
      q(3) = 0 - (returnValues(7) / 12);
-     qp = [qp; q(1), q(2), q(3)];
-     % Calculate the position of the elbow, 3x1 vector
-     posElbow = eCoordinate(q(1), q(2));
-     % Calculate the position of the tool tip, 3x1 vector
-     posToolTip = pCoordinate(q(1), q(2), q(3) + 90);
-     % Combine coordinates of elbow and tip to create one vector for csv
-     posArm = [posElbow posToolTip];
-     % Write the cartesian coordinates of arm to csv file
-     dlmwrite('armPos.csv',posArm,'-append','delimiter',' ');
 
      % Clear the live link plot
      clf;
@@ -91,23 +81,25 @@ while 1
      values(7) = newSetpoint(3) * 12;
 
      % Calculate the transformation matrix of the arm
-     TM = forPosKinematics(q(1), q(2), -(q(3)+90));
+     TM = forPosKinematics(q(1), q(2), -(q(3)+90), 1);
      % Create the rotation matrix out of the transformation matrix
      RM = [TM(1,1),TM(1,2),TM(1,3);...
            TM(2,1),TM(2,2),TM(2,3);...
            TM(3,1),TM(3,2),TM(3,3)];
      % Calculate the transpose of the rotation matrix
-     RMt = transpose(RM);
-     % Create a vector of just the tip position
-     TP = [TM(1,4);TM(2,4);TM(3,4)];
+     RMt = transpose(RM); 
+     
+     % Create a vector of just the tip position and elbow
+     TMe = forPosKinematics(q(1), q(2), -(q(3)+90), 0);
+     TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
+     TP = [TM(1,4);TM(2,4);TM(3,4)];  
+     
      dlmwrite('armPosetpoints.csv',transpose(TP),'-append','delimiter',' ');
-     xyzPos = [xyzPos; transpose(TP)];
-     timer = toc;
-     timeinterval = [timeinterval(1,:) previoustime+timer];
-     previoustime = previoustime + timer;
+     xyzPos = [xyzPos; transpose(TP)];   
+     
      % Plot the link in real time using transformation matrices for arm
      % positions
-     threeLinkPlot(posElbow, TP);
+     threeLinkPlot(TPe, TP);
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
@@ -132,9 +124,9 @@ zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
 xPpos = [0 0 0];%(dlmread('pipPos.csv',' ',[0 0 19 0]) + 20) / 20;
 yPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 1 19 1]) / 17;
 zPpos = [0 0 0];%dlmread('pipPos.csv',' ',[0 2 19 2]);
-s = transpose(qp);
-pathPlot(xEpos, yEpos, zEpos, xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
-%plot(timeinterval(1,2:end), xTpos,timeinterval(1,2:end), yTpos,'--', timeinterval(1,2:end), zTpos,'p:');
+
+pathPlot(xTpos, yTpos, zTpos, xPpos, yPpos, zPpos);
+
 grid on;
 pp.shutdown()
 clear('cam');
