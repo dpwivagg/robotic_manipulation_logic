@@ -26,7 +26,7 @@ xyzPos = [];
 returnedvalues = [];
 
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; 25 15 20; 25 -15 20];
+desiredSetpoints = [20 0 37; 20 0 37; 20 0 37];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
@@ -70,6 +70,10 @@ while 1
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
      q(3) = 0 - (returnValues(7) / 12);
+     
+%      torque1 = returnValues(3)
+%      torque2 = returnValues(6)
+%      torque3 = returnValues(9)
 
      % Clear the live link plot
      clf;
