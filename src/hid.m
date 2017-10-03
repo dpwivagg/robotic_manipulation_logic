@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 2;
+runtime = 20;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -56,9 +56,6 @@ values = zeros(15, 1, 'single');
 % Position joint 0 ranges from -980 to 1250
 % Position joint 1 ranges from -200 to 1000
 % Position joint 2 ranges from -330 to 2400
-tic
-pp.command(38, values);
-toc
 
 %% Begin program loop
 
