@@ -5,12 +5,12 @@
 % This function require function pCoordinate.m
 function threeLinkPlot(p2, p3)
 
-persistent hasInit;
-
-if isempty(hasInit)
-    initPlot();
-    hasInit = 1;
-end
+% persistent hasInit;
+% 
+% if isempty(hasInit)
+%     initPlot();
+%     hasInit = 1;
+% end
 
 % Get global link lengths
 linkVal = getLinkValues();
@@ -90,6 +90,6 @@ title({'Live position of 3-link-arm'});
 view(37.5, 30);            % Rotate the plot to 'face forward'
 end
 
-function initPlot()
-    % Whatever is in here happens once
-end
+% function initPlot()
+%     % Whatever is in here happens once
+% end

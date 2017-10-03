@@ -3,6 +3,7 @@
 function [x,y] = Imagefindandprocess(color, cam)
 % check if there is a valid connection to camera
 try
+ % take snapshot
 img = snapshot(cam);
 catch
     warning('No camera connected');
@@ -11,8 +12,10 @@ catch
     y = 0;
     return;
 end
+try
 % check if input color is valid then use
 if strcmp(color, 'red')|| strcmp(color, 'blue') || strcmp(color, 'yellow')||strcmp(color, 'green')
+    % since value is a color process image
     cen = processImage(img, color);
      if (cen(1) == 0 && cen(1,2) == 0)
          % no more in that color default to 0 0
@@ -20,6 +23,7 @@ if strcmp(color, 'red')|| strcmp(color, 'blue') || strcmp(color, 'yellow')||strc
          x = 0; 
          return;
      end
+    % define m and n value
     m = cen(1);
     n = cen(1,2);        
             else 
@@ -29,6 +33,12 @@ if strcmp(color, 'red')|| strcmp(color, 'blue') || strcmp(color, 'yellow')||strc
                  x = 0;
                  y = 0;
                  return;
+end
+catch % catch if something happens
+    warning('no color value default 0, 0');
+    x = 0;
+    y = 0;
+    return;
 end
 % get centroid pixel location and convert to x, y cordinates
 [x,y] = mn2xy( m, n );
@@ -59,16 +69,12 @@ sliderBW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
 BW = sliderBW;
 
 else if strcmp(color, 'blue') 
-
-% Convert RGB image to chosen color space
-I = rgb2hsv(RGB);
-
 % Define thresholds for channel 1 based on histogram settings
-channel1Min = 0.405;
-channel1Max = 0.512;
+channel1Min = 0.411;
+channel1Max = 0.671;
 
 % Define thresholds for channel 2 based on histogram settings
-channel2Min = 0.000;
+channel2Min = 0.622;
 channel2Max = 1.000;
 
 % Define thresholds for channel 3 based on histogram settings
@@ -82,15 +88,15 @@ sliderBW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
 BW = sliderBW;
     else if strcmp(color, 'yellow')
 % Define thresholds for channel 1 based on histogram settings
-channel1Min = 0.077;
-channel1Max = 0.118;
+channel1Min = 0.093;
+channel1Max = 0.151;
 
 % Define thresholds for channel 2 based on histogram settings
-channel2Min = 0.540;
-channel2Max = 1.000;
+channel2Min = 0.550;
+channel2Max = 0.871;
 
 % Define thresholds for channel 3 based on histogram settings
-channel3Min = 0.686;
+channel3Min = 0.700;
 channel3Max = 1.000;
 
 % Create mask based on chosen histogram thresholds
@@ -101,16 +107,16 @@ BW = sliderBW;
 
         else % color is green         
 % Define thresholds for channel 1 based on histogram settings
-channel1Min = 0.229;
-channel1Max = 0.333;
+channel1Min = 0.244;
+channel1Max = 0.359;
 
 % Define thresholds for channel 2 based on histogram settings
-channel2Min = 0.878;
+channel2Min = 0.855;
 channel2Max = 1.000;
 
 % Define thresholds for channel 3 based on histogram settings
-channel3Min = 0.136;
-channel3Max = 0.806;
+channel3Min = 0.257;
+channel3Max = 1.000;
 
 % Create mask based on chosen histogram thresholds
 sliderBW = (I(:,:,1) >= channel1Min ) & (I(:,:,1) <= channel1Max) & ...
@@ -160,11 +166,11 @@ diameters = mean([properties.MajorAxisLength properties.MinorAxisLength],2);
 radii = diameters/2;
 
 % % Display
-% imshow(binary);
-% hold on
-% plot(centroid(:,1), centroid(:,2), 'b*')
-% viscircles(centroid,radii);
-% hold off
+%  imshow(binary);
+%  hold on
+%  plot(centroid(:,1), centroid(:,2), 'b*')
+%  viscircles(centroid,radii);
+%  hold off
 end
 
 % This function is used to convert an m/n pixel coordinate to an x/y

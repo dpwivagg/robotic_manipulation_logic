@@ -57,14 +57,17 @@ point = 1;
 genesis = tic;
 
 while 1
-    
+    try
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
      toc
      
      pause(0.1) %timeit(returnValues)
-     
+    catch
+        warning('Cant read returned values closing program');
+        break;
+    end
      returnedvalues = [returnedvalues; transpose(returnValues)];
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
@@ -116,7 +119,7 @@ while 1
          break;
      end
 end
-
+try
 %% Clean up and do final plotting 
 dlmwrite(csv, returnedvalues, '-append');    
 dlmwrite('armPosetpoints.csv',xyzPos,'-append','delimiter',' ');
@@ -126,8 +129,9 @@ yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
 zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
 
 pathPlot(xTpos, yTpos, zTpos);
-
-grid on;
+catch
+    warning('error in plotting tip position on 3d plot');
+end
 pp.shutdown()
 clear('cam');
 clear java;
