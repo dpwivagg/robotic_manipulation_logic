@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 15;
+runtime = 2;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -39,6 +39,15 @@ gains = [0.0025; 0; 0.015; 0.003; 0.0005; 0.03; 0.003; 0; 0.001;...
 % Set the PID gains using the packet processor
 tic
 pp.command(39, gains);
+toc
+
+%% Test the servo
+servoPacket = zeros(15, 1, 'single');
+% 0 = open
+% 1 = closed
+servoPacket(1) = 1;
+tic
+pp.command(48, servoPacket);
 toc
 
 %% Initial values for position command
