@@ -20,10 +20,14 @@ end
 % Set values for the lengths of link 1, 2, and 3
 global links
 links = [20 17 20];
+% set global joint angle values
+global q 
+q = [];
 
 % Create the xyz position array to store values
 xyzPos = [];
 returnedvalues = [];
+torque = [];
 
 % Define the matrix of setpoints
 desiredSetpoints = [20 0 37; 20 0 37; 20 0 37];
@@ -74,9 +78,9 @@ while 1
      q(2) = (returnValues(4) / 12);
      q(3) = 0 - (returnValues(7) / 12);
      
-%      torque1 = returnValues(3)
-%      torque2 = returnValues(6)
-%      torque3 = returnValues(9)
+     torque(1) = returnValues(3);
+     torque(2) = returnValues(6);
+     torque(3) = returnValues(9);
 
      % Clear the live link plot
      clf;
@@ -101,9 +105,9 @@ while 1
      TP = [TM(1,4);TM(2,4);TM(3,4)];  
       
      xyzPos = [xyzPos; transpose(TP)];   
-     
+     forcev = tipforcevector(torque);
      % Plot the link in real time using transformation matrices for arm
-     % positions
+     % positions !!!!ADD FORCE VECTOR!!!
      threeLinkPlot(TPe, TP);
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)

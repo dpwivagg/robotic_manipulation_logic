@@ -3,17 +3,17 @@
 % transformation matrix representing the forward position kinematics of the
 % arm. This function takes in the angles for the base, shoulder, and elbow
 % joints and returns a 4x4 transformation matrix
-function TM = forPosKinematics(q0, q1, q2, mode)
+function TM = forPosKinematics(mode)
 % Get global link lengths
 linkVal = getLinkValues();
-
+q = getJointValues();
 % Define the DH parameters for the arm 
 % For link 1
-l1.a = 0; l1.alpha = 90; l1.d = linkVal(1); l1.theta = q0; 
+l1.a = 0; l1.alpha = 90; l1.d = linkVal(1); l1.theta = q(1); 
 % For link 2
-l2.a = linkVal(2); l2.alpha = 0;  l2.d = 0; l2.theta = q1;
+l2.a = linkVal(2); l2.alpha = 0;  l2.d = 0; l2.theta = q(2);
 % For link 3
-l3.a = linkVal(3); l3.alpha = 0;  l3.d = 0; l3.theta = q2;
+l3.a = linkVal(3); l3.alpha = 0;  l3.d = 0; l3.theta = q(3);
 % For tool tip
 tt.a = 0; tt.alpha = 0;  tt.d = 0; tt.theta = 90;
 
