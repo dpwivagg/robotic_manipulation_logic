@@ -3,7 +3,7 @@
 % of a 3-DOF arm with link lengths defined below.
 
 % This function require function pCoordinate.m
-function threeLinkPlot(ax, p2, p3)
+function threeLinkPlot(ax, p2, p3, forces)
 % Get global link lengths
 linkVal = getLinkValues();
 
@@ -41,6 +41,11 @@ xS2 = [p2(1) p3(1)];
 yS2 = [p2(2) p3(2)];
 zS2 = [p0(3) p0(3)];
 
+% Force vector at tip in direction of force
+xF = [p3(1) forces(1)];
+yF = [p3(2) forces(2)];
+zF = [p3(3) -forces(3)];
+
 % Create a circle showing the range of the arm
 theta = 0:pi/50:2*pi;
 
@@ -66,6 +71,7 @@ plot3(x1, y1, z1, '-b', ...
       x3, y3, z3, '-c', ...
       xS1, yS1, zS1, '-k', ...
       xS2, yS2, zS2, '-k', ...
+      xF, yF, zF, '-.m',...
       xyplane.x, xyplane.y, xyplane.z, 'k:', ...
       xzplane.x, xzplane.y, xzplane.z, 'k:', ...
       yzplane.x, yzplane.y, yzplane.z, 'k:', 'LineWidth', 2);

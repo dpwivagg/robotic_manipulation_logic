@@ -82,7 +82,7 @@ while 1
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
-     q(3) = 0 - (returnValues(7) / 12);
+     q(3) = -(0 - (returnValues(7) / 12))+90;
      
      torque(1) = returnValues(3);
      torque(2) = returnValues(6);
@@ -97,7 +97,7 @@ while 1
      values(7) = newSetpoint(3) * 12;
 
      % Calculate the transformation matrix of the arm
-     TM = forPosKinematics(q(1), q(2), -(q(3)+90), 1);
+     TM = forPosKinematics(1);
      % Create the rotation matrix out of the transformation matrix
      RM = [TM(1,1),TM(1,2),TM(1,3);...
            TM(2,1),TM(2,2),TM(2,3);...
@@ -106,12 +106,12 @@ while 1
      RMt = transpose(RM); 
      
      % Create a vector of just the tip position and elbow
-     TMe = forPosKinematics(q(1), q(2), -(q(3)+90), 0);
+     TMe = forPosKinematics(0);
      TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
      TP = [TM(1,4);TM(2,4);TM(3,4)];  
       
      xyzPos = [xyzPos; transpose(TP)];   
-     forcev = tipforcevector(torque);
+     %forcev = tipforcevector(torque);
      % Plot the link in real time using transformation matrices for arm
      % positions !!!!ADD FORCE VECTOR!!!
      threeLinkPlot(TPe, TP);

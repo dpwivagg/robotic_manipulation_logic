@@ -81,7 +81,10 @@ f.Visible = 'on';
 global links vParam
 links = [20 17 20];
 vParam = [-37.5 30];
-
+% set global joint angle values
+global q 
+q = [];
+torque = [];
 runtime = 15;
 genesis = tic;
 sentinel = 1;
@@ -96,16 +99,35 @@ while sentinel
     % Take encoder ticks and translate to degrees
     q(1) = 0 - (returnValues(1) / 12);
     q(2) = (returnValues(4) / 12);
-    q(3) = 0 - (returnValues(7) / 12);
-     
+    q(3) = -((0 - (returnValues(7) / 12))+90);
+    
+    % Calculate force vector at tip from torques at joints
+    forceTip = tipforcevector([returnValues(3); returnValues(6); returnValues(9)]);
+    % Calculate the magnitude for the tip force in each direction
+    magFT(1) = sqrt(forceTip(1)^2);
+    magFT(2) = sqrt(forceTip(2)^2);
+    magFT(3) = sqrt(forceTip(3)^2);
+    % Create a unit vector of the tip force
+    uForceTip(1) = forceTip(1)/magFT(1);
+    uForceTip(2) = forceTip(2)/magFT(2);
+    uForceTip(3) = forceTip(3)/magFT(3);
+    % Scale the unit vector by 10 for plotting
+    uForceTip(1) = uForceTip(1)*10;
+    uForceTip(2) = uForceTip(2)*10;
+    uForceTip(3) = uForceTip(3)*10;
+        
     % Calculate the transformation matrix of the arm
-    TM = forPosKinematics(q(1), q(2), -(q(3)+90));
+    TM = forPosKinematics(1);
     
     % Create a vector of just the tip position
     TP = [TM(1,4);TM(2,4);TM(3,4)];
     
+    % Create a vector of just the elbow
+     TMe = forPosKinematics(0);
+     TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
+    
     %axes(ax);
-    threeLinkPlot(ax,[17,0,20],TP);
+    threeLinkPlot(ax,TPe,TP,uForceTip);
     
     % if the total elapsed time is greater than desired, end the loop
     if(toc(genesis) > runtime) 

@@ -24,6 +24,5 @@ q2 = q(3) * (pi/180);
 Jsub = subs(Ji, [symq0 symq1 symq2 syml1 syml2 syml3], [q0 q1 q2 linkVal(1) linkVal(2) linkVal(3)]);
 
 % torque times inversed transpose of J is force at tip
-f = Jsub*torque;
-
+f = double(Jsub*torque);
 end
