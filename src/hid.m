@@ -20,10 +20,13 @@ end
 % Set values for the lengths of link 1, 2, and 3
 global links
 links = [20 17 20];
+global  vParam
+vParam = [-37.5 30];
 % set global joint angle values
 global q 
 q = [];
-
+ax = axes('Units','pixels','Position',[50,145,400,400]);
+ax.Units = 'normalized';
 % Create the xyz position array to store values
 xyzPos = [];
 returnedvalues = [];
@@ -82,12 +85,25 @@ while 1
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
-     q(3) = -(0 - (returnValues(7) / 12))+90;
+     q(3) = -(0 - (returnValues(7) / 12))-90;
      
-     torque(1) = returnValues(3);
-     torque(2) = returnValues(6);
-     torque(3) = returnValues(9);
-
+     torque(1,1) = returnValues(3);
+     torque(2,1) = returnValues(6);
+     torque(3,1) = returnValues(9);
+     forceTip = tipforcevector(torque);
+        % Calculate the magnitude for the tip force in each direction
+    magFT(1) = sqrt(forceTip(1)^2);
+    magFT(2) = sqrt(forceTip(2)^2);
+    magFT(3) = sqrt(forceTip(3)^2);
+    % Create a unit vector of the tip force
+    uForceTip(1) = forceTip(1)/magFT(1);
+    uForceTip(2) = forceTip(2)/magFT(2);
+    uForceTip(3) = forceTip(3)/magFT(3);
+    % Scale the unit vector by 10 for plotting
+    uForceTip(1) = uForceTip(1)*10;
+    uForceTip(2) = uForceTip(2)*10;
+    uForceTip(3) = uForceTip(3)*10;
+    
      % Clear the live link plot
      clf;
      
@@ -114,7 +130,8 @@ while 1
      %forcev = tipforcevector(torque);
      % Plot the link in real time using transformation matrices for arm
      % positions !!!!ADD FORCE VECTOR!!!
-     threeLinkPlot(TPe, TP);
+        threeLinkPlot(ax,TPe,TP,uForceTip);
+        
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
