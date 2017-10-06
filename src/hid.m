@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 20;
+runtime = 15;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -30,7 +30,7 @@ ax.Units = 'normalized';
 % Create the xyz position array to store values
 xyzPos = [];
 returnedvalues = [];
-torque = [];
+torque = [0;0;0];
 
 % Define the matrix of setpoints
 desiredSetpoints = [20 0 37; 20 0 37; 20 0 37];
@@ -87,22 +87,16 @@ while 1
      q(2) = (returnValues(4) / 12);
      q(3) = -(0 - (returnValues(7) / 12))-90;
      
-     torque(1,1) = returnValues(3);
-     torque(2,1) = returnValues(6);
-     torque(3,1) = returnValues(9);
+     torque(1) = returnValues(3);
+     torque(2) = returnValues(6);
+     torque(3) = returnValues(9);
      forceTip = tipforcevector(torque);
         % Calculate the magnitude for the tip force in each direction
-    magFT(1) = sqrt(forceTip(1)^2);
-    magFT(2) = sqrt(forceTip(2)^2);
-    magFT(3) = sqrt(forceTip(3)^2);
+%     magFT = sqrt(forceTip(1)^2 + forceTip(2)^2 + forceTip(3)^2);
     % Create a unit vector of the tip force
-    uForceTip(1) = forceTip(1)/magFT(1);
-    uForceTip(2) = forceTip(2)/magFT(2);
-    uForceTip(3) = forceTip(3)/magFT(3);
+%     uForceTip = forceTip / magFT;
     % Scale the unit vector by 10 for plotting
-    uForceTip(1) = uForceTip(1)*10;
-    uForceTip(2) = uForceTip(2)*10;
-    uForceTip(3) = uForceTip(3)*10;
+    uForceTip = forceTip
     
      % Clear the live link plot
      clf;
@@ -137,6 +131,10 @@ while 1
          point = point + 1;
         % pause(0.5);
          if(point > size(pointMatrix, 1))
+%              servoPacket(1) = 0;
+%             tic
+%             pp.command(48, servoPacket);
+%             toc
              break;
          end
      end
