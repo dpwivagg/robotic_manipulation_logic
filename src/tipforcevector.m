@@ -1,10 +1,8 @@
 %% Joint Torque to force at tip calculations
 function f = tipforcevector(torque)
-% Apparently, we need the torque to be in order q2, q1, q0
-%torque = flipud(torqueIn);
 % get the global variables
-linkVal = getLinkValues();
-q = getJointValues();
+linkVal = [20 17 20];%getLinkValues();
+q = [0 90 -90];%getJointValues();
 q(3) = q(3) + 90;
 % recalcuate the jacobian
 
@@ -13,7 +11,7 @@ syms symq0 symq1 symq2 syml1 syml2 syml3
 J = jacobian([cos(symq0) * (syml2 * cos(symq1) + syml3 * cos(symq1 - symq2));...
               sin(symq0) * (syml2 * cos(symq1) + syml3 * cos(symq1 - symq2));...
               syml1 + (syml2 * sin(symq1)) + (syml3 * sin(symq1 - symq2))],[symq0 symq1 symq2]);
-          
+
 % get the transpose then the inverse
 Jt = transpose(J);
 Ji = inv(Jt);
