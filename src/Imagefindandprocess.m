@@ -18,10 +18,17 @@ if strcmp(color, 'red')|| strcmp(color, 'blue') || strcmp(color, 'yellow')||strc
     % since value is a color process image
     cen = processImage(img, color);
      if (cen(1) == 0 && cen(1,2) == 0)
+         % try again
+          % take snapshot
+          pause(1.5);
+            img = snapshot(cam);       
+            cen = processImage(img, color);
+           if (cen(1) == 0 && cen(1,2) == 0)
          % no more in that color default to 0 0
          y = 0;
          x = 0; 
          return;
+           end
      end
     % define m and n value
     m = cen(1);
@@ -42,7 +49,7 @@ catch % catch if something happens
 end
 % get centroid pixel location and convert to x, y cordinates
 [x,y] = mn2xy( m, n );
-x=x+17;
+x=x+22;
 end
 
 % This function takes an RGB image and returns the image with centroid

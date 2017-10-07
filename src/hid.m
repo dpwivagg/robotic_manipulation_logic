@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 100;
+runtime = 40;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -32,10 +32,18 @@ xyzPos = [];
 returnedvalues = [];
 torque = [0;0;0];
 
+values = zeros(15, 1, 'single');
+values(1) = 0;
+values(4) = 800;
+values(7) = 800;
+tic
+pp.command(38, values);
+toc
+
 [location(1),location(2)] = Imagefindandprocess('green', cam)
 
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; location(1) location(2) 3; 20 0 37];
+desiredSetpoints = [20 0 37; location(1) location(2) 3; location(1) location(2) 15];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
@@ -43,25 +51,25 @@ delete 'values.csv'; delete 'armPosetpoints.csv';
 
 %% KP Tuning Parameters
 % Set KP, KI, KD for joints 0, 1, and 2 [P1;I1;D1;P2;I2;D2;P3;I3;D3]
-gains = [0.0025; 0; 0.015; 0.003; 0.0005; 0.03; 0.003; 0; 0.001;...
+gains = [0.0025; 0; 0.015; 0.002; 0.0005; 0.03; 0.001; 0; 0.0015;...
     0;0;0;0;0;0];
 % Set the PID gains using the packet processor
 tic
 pp.command(39, gains);
 toc
 
-%% Test the servo
+%% Open the servo
 servoPacket = zeros(15, 1, 'single');
 % 0 = open
 % 1 = closed
-servoPacket(1) = 1;
+servoPacket(1) = 0;
 tic
 pp.command(48, servoPacket);
 toc
 
 %% Initial values for position command
 % Set initial PID setpoints
-values = zeros(15, 1, 'single');
+% values = zeros(15, 1, 'single');
 % Position joint 0 ranges from -980 to 1250
 % Position joint 1 ranges from -200 to 1000
 % Position joint 2 ranges from -330 to 2400
@@ -131,13 +139,12 @@ while 1
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
-         if(point == 3)
-            servoPacket(1) = 0;
+         if(point == 47)
+             servoPacket(1) = 1;
             tic
             pp.command(48, servoPacket);
             toc
          end
-         
         % pause(0.5);
          if(point > size(pointMatrix, 1))
              break;
