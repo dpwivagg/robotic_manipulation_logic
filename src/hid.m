@@ -130,6 +130,12 @@ while 1
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
+         % These lines are for picking up the object (closing the servo)
+         % They occur at points=47 because the pointMatrix is a very large
+         % matrix with all of the setpoints along the trajectory.
+         % Eventually we will be deleting this section when we have another
+         % way to know when to close the gripper (I.E. state machine) but
+         % for now 47 is a good enough estimate when we are testing.
 %          if(point == 47)
 %              servoPacket(1) = 1;
 %             tic
