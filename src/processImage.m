@@ -28,9 +28,9 @@ function centroid = processImage(RGB)
     channel3Max(3) = 1.000;
     
     % Preallocate array for centroids
-    centroid = [1 1;...
-                1 1;...
-                1 1];
+    centroid = [0 0;...
+                0 0;...
+                0 0];
     
     % For each of the color parameters, create a binary image
     for i = 1:3
@@ -74,10 +74,12 @@ function centroid = processImage(RGB)
             centroid(i,:) = [1,1];
         end
         
-        % Display
-        %imshow(RGB);
-        %hold on
-        %plot(centroid(:,1), centroid(:,2), 'b*')
-        %hold off
+        centroid(i,:) = mn2xy(centroid(i,1),centroid(i,2));
+        
+%         % Display
+%         imshow(RGB);
+%         hold on
+%         plot(centroid(:,1), centroid(:,2), 'b*')
+%         hold off
     end
 end

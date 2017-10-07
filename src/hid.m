@@ -40,10 +40,12 @@ tic
 pp.command(38, values);
 toc
 
-[location(1),location(2)] = Imagefindandprocess('green', cam)
+%[location(1),location(2)] = Imagefindandprocess('green', cam)
+img = snapshot(cam);
+centroids = processImage(img)
 
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; location(1) location(2) 3; location(1) location(2) 15];
+desiredSetpoints = [20 0 37; centroids(1,1) centroids(1,2) 3; centroids(1,1) centroids(1,2) 15];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
