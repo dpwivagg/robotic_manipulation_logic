@@ -42,6 +42,7 @@ catch % catch if something happens
 end
 % get centroid pixel location and convert to x, y cordinates
 [x,y] = mn2xy( m, n );
+x=x+17;
 end
 
 % This function takes an RGB image and returns the image with centroid

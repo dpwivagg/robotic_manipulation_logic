@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 15;
+runtime = 100;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -32,10 +32,10 @@ xyzPos = [];
 returnedvalues = [];
 torque = [0;0;0];
 
-location = Imagefindandprocess(cam,'blue')
+[location(1),location(2)] = Imagefindandprocess('green', cam)
 
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; location(1) location(2) 3; 25 15 10];
+desiredSetpoints = [20 0 37; location(1) location(2) 3; 20 0 37];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
@@ -98,7 +98,7 @@ while 1
     % Create a unit vector of the tip force
 %     uForceTip = forceTip / magFT;
     % Scale the unit vector by 10 for plotting
-    uForceTip = forceTip
+      uForceTip = forceTip
     
      % Clear the live link plot
      clf;
@@ -131,7 +131,7 @@ while 1
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
-         if(point == 2)
+         if(point == 3)
             servoPacket(1) = 0;
             tic
             pp.command(48, servoPacket);
