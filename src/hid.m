@@ -2,7 +2,7 @@ javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
 import org.hid4java.event.*;
-import java.nio.ByteBuffer;
+import java.nio.ByteBuffer;;
 import java.nio.ByteOrder;
 import java.lang.*;
 
@@ -32,8 +32,10 @@ xyzPos = [];
 returnedvalues = [];
 torque = [0;0;0];
 
+location = Imagefindandprocess(cam,'blue')
+
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; 20 0 37; 20 0 37];
+desiredSetpoints = [20 0 37; location(1) location(2) 3; 25 15 10];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
@@ -85,7 +87,7 @@ while 1
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
-     q(3) = -(0 - (returnValues(7) / 12))-90;
+     q(3) = (0 - (returnValues(7) / 12));
      
      torque(1) = returnValues(3);
      torque(2) = returnValues(6);
@@ -123,18 +125,21 @@ while 1
      xyzPos = [xyzPos; transpose(TP)];   
      %forcev = tipforcevector(torque);
      % Plot the link in real time using transformation matrices for arm
-     % positions !!!!ADD FORCE VECTOR!!!
+     % positions
         threeLinkPlot(ax,TPe,TP,uForceTip);
         
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
+         if(point == 2)
+            servoPacket(1) = 0;
+            tic
+            pp.command(48, servoPacket);
+            toc
+         end
+         
         % pause(0.5);
          if(point > size(pointMatrix, 1))
-%              servoPacket(1) = 0;
-%             tic
-%             pp.command(48, servoPacket);
-%             toc
              break;
          end
      end

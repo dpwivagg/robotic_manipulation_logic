@@ -5,6 +5,7 @@ function f = tipforcevector(torque)
 % get the global variables
 linkVal = getLinkValues();
 q = getJointValues();
+q(3) = q(3) + 90;
 % recalcuate the jacobian
 
 % Calculate the symbolic Jacobian matrix
@@ -12,7 +13,7 @@ syms symq0 symq1 symq2 syml1 syml2 syml3
 J = jacobian([cos(symq0) * (syml2 * cos(symq1) + syml3 * cos(symq1 - symq2));...
               sin(symq0) * (syml2 * cos(symq1) + syml3 * cos(symq1 - symq2));...
               syml1 + (syml2 * sin(symq1)) + (syml3 * sin(symq1 - symq2))],[symq0 symq1 symq2]);
-
+          
 % get the transpose then the inverse
 Jt = transpose(J);
 Ji = inv(Jt);
