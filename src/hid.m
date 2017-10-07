@@ -2,12 +2,12 @@ javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
 import org.hid4java.event.*;
-import java.nio.ByteBuffer;;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 40;
+runtime = 25;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -95,18 +95,9 @@ while 1
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
-     q(3) = (0 - (returnValues(7) / 12));
-     
-     torque(1) = returnValues(3);
-     torque(2) = returnValues(6);
-     torque(3) = returnValues(9);
-     forceTip = tipforcevector(torque);
-        % Calculate the magnitude for the tip force in each direction
-%     magFT = sqrt(forceTip(1)^2 + forceTip(2)^2 + forceTip(3)^2);
-    % Create a unit vector of the tip force
-%     uForceTip = forceTip / magFT;
-    % Scale the unit vector by 10 for plotting
-      uForceTip = forceTip
+     q(3) = 0 - (returnValues(7) / 12);
+     % Get torque values from the packet
+     uForceTip = tipforcevector([returnValues(3);returnValues(6);returnValues(9)]);
     
      % Clear the live link plot
      clf;
@@ -139,13 +130,12 @@ while 1
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
-         if(point == 47)
-             servoPacket(1) = 1;
-            tic
-            pp.command(48, servoPacket);
-            toc
-         end
-        % pause(0.5);
+%          if(point == 47)
+%              servoPacket(1) = 1;
+%             tic
+%             pp.command(48, servoPacket);
+%             toc
+%          end
          if(point > size(pointMatrix, 1))
              break;
          end

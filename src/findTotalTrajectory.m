@@ -13,7 +13,7 @@ function pointMatrix = findTotalTrajectory(points)
         A = points(k,:);
         x = trajectorygen(0,4,0,0,lastA(1),A(1),0.1);
         y = trajectorygen(0,4,0,0,lastA(2),A(2),0.1);
-        z = trajectorygen(0,.4,0,10,lastA(3),A(3),0.01);
+        z = trajectorygen(0,4,0,0,lastA(3),A(3),0.1);
         lastA = A;
         pointMatrix = [pointMatrix; x(:,2) y(:,2), z(:,2)];
     end
