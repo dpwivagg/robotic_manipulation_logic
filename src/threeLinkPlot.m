@@ -44,7 +44,7 @@ zS2 = [p0(3) p0(3)];
 % Force vector at tip in direction of force
 xF = [p3(1) (p3(1)+forces(1))];
 yF = [p3(2) (p3(2)+forces(2))];
-zF = [p3(3) (p3(3)-forces(3))];
+zF = [p3(3) -(p3(3)-forces(3))];
 
 % Create a circle showing the range of the arm
 theta = 0:pi/50:2*pi;
@@ -65,20 +65,21 @@ yzplane.y = (linkVal(1) + linkVal(2)) * cos(theta) + p1(2);
 yzplane.z = (linkVal(1) + linkVal(2)) * sin(theta) + p1(3);
 
 % Plot 
+
 %axes(ax);
 plot3(x1, y1, z1, '-b', ...
       x2, y2, z2, '-r', ...
       x3, y3, z3, '-c', ...
       xS1, yS1, zS1, '-k', ...
-      xS2, yS2, zS2, '-k', ... 
-      xF, yF, zF, '-.m',...
+      xS2, yS2, zS2, '-k', ... %       xF, yF, zF, '-.m',...
       xyplane.x, xyplane.y, xyplane.z, 'k:', ...
       xzplane.x, xzplane.y, xzplane.z, 'k:', ...
       yzplane.x, yzplane.y, yzplane.z, 'k:', 'LineWidth', 2);
 
 % Hold on to objects in the axes
-%hold on;
-%quiver3(xF(1),yF(1),zF(1),xF(1,2),yF(1,2),zF(1,2));
+hold on;
+%annotation('arrow',xF,yF, zF);
+quiver3(xF(1),yF(1),zF(1),xF(1,2),yF(1,2),zF(1,2), 'LineWidth',2);
 % Lock aspect ratios equal
 axis equal;
 % Put a box around axes

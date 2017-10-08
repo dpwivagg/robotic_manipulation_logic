@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 25;
+runtime = 40;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -40,12 +40,12 @@ tic
 pp.command(38, values);
 toc
 
-%[location(1),location(2)] = Imagefindandprocess('green', cam)
-img = snapshot(cam);
-centroids = processImage(img)
+[location(1),location(2)] = Imagefindandprocess('yellow', cam)
+%img = snapshot(cam);
+%centroids = processImage(img)
 
 % Define the matrix of setpoints
-desiredSetpoints = [20 0 37; centroids(1,1) centroids(1,2) 3; centroids(1,1) centroids(1,2) 15];
+desiredSetpoints = [20 0 37; location(1) location(2) 3; 20 0 37];
 pointMatrix = findTotalTrajectory(desiredSetpoints);
 
 % we need a fresh list of angles every time, or else the plot will not work 
@@ -127,7 +127,7 @@ while 1
      %forcev = tipforcevector(torque);
      % Plot the link in real time using transformation matrices for arm
      % positions
-        threeLinkPlot(ax,TPe,TP,uForceTip);
+      threeLinkPlot(ax,TPe,TP,uForceTip);
         
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
@@ -138,12 +138,12 @@ while 1
          % Eventually we will be deleting this section when we have another
          % way to know when to close the gripper (I.E. state machine) but
          % for now 47 is a good enough estimate when we are testing.
-%          if(point == 47)
-%              servoPacket(1) = 1;
-%             tic
-%             pp.command(48, servoPacket);
-%             toc
-%          end
+         if(point == 47)
+             servoPacket(1) = 1;
+            tic
+            pp.command(48, servoPacket);
+            toc
+         end
          if(point > size(pointMatrix, 1))
              break;
          end

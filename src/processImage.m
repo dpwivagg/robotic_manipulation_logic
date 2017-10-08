@@ -76,10 +76,10 @@ function centroid = processImage(RGB)
         
         centroid(i,:) = mn2xy(centroid(i,1),centroid(i,2));
         
-%         % Display
-%         imshow(RGB);
-%         hold on
-%         plot(centroid(:,1), centroid(:,2), 'b*')
-%         hold off
+        % Display
+        imshow(RGB);
+        hold on
+        plot(centroid(:,1), centroid(:,2), 'b*')
+        hold off
     end
 end
