@@ -2,12 +2,14 @@ javaaddpath('../lib/hid4java-0.5.1.jar');
 
 import org.hid4java.*;
 import org.hid4java.event.*;
-import java.nio.ByteBuffer;;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 180;
+runtime = 60;
+
+stateUpdate = 1;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -74,30 +76,31 @@ while 1
     if(stateUpdate == 1)
         switch state
             case 1
-                if(Imagefindandprocess(cam,'blue') != 0)
-                    location = Imagefindandprocess(cam,'blue');
+                if(Imagefindandprocess('blue',cam) ~= 0)
+                    [location(1),location(2)] = Imagefindandprocess('blue',cam);
                     xColorValue = 24;
-                elseif(Imagefindandprocess(cam,'green') != 0)
-                    location = Imagefindandprocess(cam,'green');
+                elseif(Imagefindandprocess('green',cam) ~= 0)
+                    [location(1),location(2)] = Imagefindandprocess('green',cam);
                     xColorValue = 20;
                 else %Object is yellow
-                    location = Imagefindandprocess(cam,'yellow');
+                    [location(1),location(2)] = Imagefindandprocess('yellow',cam);
                     xColorValue = 16;
                 end
-                desiredSetpoints = [20 0 37; location(1) location(2) 3];
+                desiredSetpoints = [20 0 37; 23+location(1) location(2) 3];
                 pointMatrix = findTotalTrajectory(desiredSetpoints);
                 point = 1;
                 stateUpdate = 0;
             case 2
-                servoPacket(1) = 0;
+                servoPacket(1) = 1;
                 tic
                 pp.command(48, servoPacket);
                 toc
-                desiredSetpoints = flipud(pointMatrix);
+                 pointMatrix = flipud(pointMatrix);
                 point = 1;
-                stateUpdate = 0;
+                state = 3;
             case 3
-                if(uForceTip > 50)
+                magForceTip = sqrt(uForceTip(1)^2 + uForceTip(2)^2 + uForceTip(3)^2);
+                if(magForceTip > 1)
                     desiredSetpoints = [20 0 37; xColorValue -16 3];
                 else
                     desiredSetpoints = [20 0 37; xColorValue 16 3];
@@ -106,7 +109,7 @@ while 1
                 point = 1;
                 stateUpdate = 0;
             case 4
-                servoPacket(1) = 1;
+                servoPacket(1) = 0;
                 tic
                 pp.command(48, servoPacket);
                 toc
@@ -114,6 +117,7 @@ while 1
             otherwise
                 % If anything goes wrong, start over
                 state = 1;
+                point = 1;
         end
     end
 
@@ -162,6 +166,7 @@ while 1
          if(point > size(pointMatrix, 1))
              stateUpdate = 1;
              state = state + 1;
+             point = 1;
          end
      end
 
