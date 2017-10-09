@@ -56,7 +56,7 @@ toc
 
 %% Initial values for position command
 % Set initial PID setpoints
-% values = zeros(15, 1, 'single');
+values = zeros(15, 1, 'single');
 % Position joint 0 ranges from -980 to 1250
 % Position joint 1 ranges from -200 to 1000
 % Position joint 2 ranges from -330 to 2400
@@ -123,7 +123,7 @@ while 1
 
      tic
      %Process command and print the returning values
-     returnValues = pp.command(38, values);
+     returnValues = pp.command(38,values);
      toc
      
      pause(0.1) %timeit(returnValues)

@@ -1,9 +1,9 @@
 %% Joint Torque to force at tip calculations
 function f = tipforcevector(torque)
 % get the global variables
-linkVal = getLinkValues();
+linkVal = [20 17 20];%getLinkValues();
 linkVal = linkVal / 100;
-q = getJointValues();
+q = [0 90 0];%getJointValues();
 q(3) = -(q(3) + 90);
 % recalcuate the jacobian
 
