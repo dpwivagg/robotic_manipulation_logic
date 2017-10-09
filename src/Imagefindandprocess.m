@@ -21,7 +21,8 @@ if strcmp(color, 'red')|| strcmp(color, 'blue') || strcmp(color, 'yellow')||strc
          % try again
           % take snapshot
           pause(1.5);
-            img = snapshot(cam);       
+
+          img = snapshot(cam);       
             cen = processImage(img, color);
            if (cen(1) == 0 && cen(1,2) == 0)
          % no more in that color default to 0 0
