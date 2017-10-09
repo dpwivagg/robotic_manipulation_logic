@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 15;
+runtime = 180;
 
 pp = PacketProcessor(7);
 csv = 'values.csv';
@@ -29,14 +29,7 @@ ax = axes('Units','pixels','Position',[50,145,400,400]);
 ax.Units = 'normalized';
 % Create the xyz position array to store values
 xyzPos = [];
-returnedvalues = [];
-torque = [0;0;0];
-
-location = Imagefindandprocess(cam,'blue')
-
-% Define the matrix of setpoints
-desiredSetpoints = [20 0 37; location(1) location(2) 3; 25 15 10];
-pointMatrix = findTotalTrajectory(desiredSetpoints);
+plotValues = [];
 
 % we need a fresh list of angles every time, or else the plot will not work 
 delete 'values.csv'; delete 'armPosetpoints.csv';
@@ -50,11 +43,11 @@ tic
 pp.command(39, gains);
 toc
 
-%% Test the servo
+%% Open the servo
 servoPacket = zeros(15, 1, 'single');
 % 0 = open
 % 1 = closed
-servoPacket(1) = 1;
+servoPacket(1) = 0;
 tic
 pp.command(48, servoPacket);
 toc
@@ -71,35 +64,75 @@ values = zeros(15, 1, 'single');
 point = 1;
 genesis = tic;
 
+state = 1;
+% State 1: Find objects and travel to one
+% State 2: Pick up an object and travel to weighing position
+% State 3: Weigh the object and travel to sorting position
+% State 3: Drop the object
+
 while 1
-    try
+    if(stateUpdate == 1)
+        switch state
+            case 1
+                if(Imagefindandprocess(cam,'blue') != 0)
+                    location = Imagefindandprocess(cam,'blue');
+                    xColorValue = 24;
+                elseif(Imagefindandprocess(cam,'green') != 0)
+                    location = Imagefindandprocess(cam,'green');
+                    xColorValue = 20;
+                else %Object is yellow
+                    location = Imagefindandprocess(cam,'yellow');
+                    xColorValue = 16;
+                end
+                desiredSetpoints = [20 0 37; location(1) location(2) 3];
+                pointMatrix = findTotalTrajectory(desiredSetpoints);
+                point = 1;
+                stateUpdate = 0;
+            case 2
+                servoPacket(1) = 0;
+                tic
+                pp.command(48, servoPacket);
+                toc
+                desiredSetpoints = flipud(pointMatrix);
+                point = 1;
+                stateUpdate = 0;
+            case 3
+                if(uForceTip > 50)
+                    desiredSetpoints = [20 0 37; xColorValue -16 3];
+                else
+                    desiredSetpoints = [20 0 37; xColorValue 16 3];
+                end
+                pointMatrix = findTotalTrajectory(desiredSetpoints);
+                point = 1;
+                stateUpdate = 0;
+            case 4
+                servoPacket(1) = 1;
+                tic
+                pp.command(48, servoPacket);
+                toc
+                state = 1;
+            otherwise
+                % If anything goes wrong, start over
+                state = 1;
+        end
+    end
+
      tic
      %Process command and print the returning values
      returnValues = pp.command(38, values);
      toc
      
      pause(0.1) %timeit(returnValues)
-    catch
-        warning('Cant read returned values closing program');
-        break;
-    end
-     returnedvalues = [returnedvalues; transpose(returnValues)];
+
+     plotValues = [plotValues; transpose(returnValues)];
      % Take encoder ticks and translate to degrees
      q(1) = 0 - (returnValues(1) / 12);
      q(2) = (returnValues(4) / 12);
      q(3) = (0 - (returnValues(7) / 12));
      
-     torque(1) = returnValues(3);
-     torque(2) = returnValues(6);
-     torque(3) = returnValues(9);
-     forceTip = tipforcevector(torque);
-        % Calculate the magnitude for the tip force in each direction
-%     magFT = sqrt(forceTip(1)^2 + forceTip(2)^2 + forceTip(3)^2);
-    % Create a unit vector of the tip force
-%     uForceTip = forceTip / magFT;
-    % Scale the unit vector by 10 for plotting
-    uForceTip = forceTip
-    
+     % Determine the force vector at the tip
+     uForceTip = tipforcevector([returnValues(3); returnValues(6); returnValues(9)]);
+
      % Clear the live link plot
      clf;
      
@@ -108,39 +141,27 @@ while 1
      values(4) = newSetpoint(2) * 12;
      values(7) = newSetpoint(3) * 12;
 
-     % Calculate the transformation matrix of the arm
+     % Calculate the transformation matrix of the arm and get tip position
      TM = forPosKinematics(1);
-     % Create the rotation matrix out of the transformation matrix
-     RM = [TM(1,1),TM(1,2),TM(1,3);...
-           TM(2,1),TM(2,2),TM(2,3);...
-           TM(3,1),TM(3,2),TM(3,3)];
-     % Calculate the transpose of the rotation matrix
-     RMt = transpose(RM); 
+     TP = [TM(1,4);TM(2,4);TM(3,4)];  
      
-     % Create a vector of just the tip position and elbow
+     % Create a vector of the elbow position
      TMe = forPosKinematics(0);
      TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
-     TP = [TM(1,4);TM(2,4);TM(3,4)];  
       
+     % Store the tip position for plotting at the end
      xyzPos = [xyzPos; transpose(TP)];   
-     %forcev = tipforcevector(torque);
+     
      % Plot the link in real time using transformation matrices for arm
      % positions
-        threeLinkPlot(ax,TPe,TP,uForceTip);
+     threeLinkPlot(ax,TPe,TP,uForceTip);
         
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
          point = point + 1;
-         if(point == 2)
-            servoPacket(1) = 0;
-            tic
-            pp.command(48, servoPacket);
-            toc
-         end
-         
-        % pause(0.5);
          if(point > size(pointMatrix, 1))
-             break;
+             stateUpdate = 1;
+             state = state + 1;
          end
      end
 
@@ -149,19 +170,12 @@ while 1
          break;
      end
 end
-try
-%% Clean up and do final plotting 
-dlmwrite(csv, returnedvalues, '-append');    
-dlmwrite('armPosetpoints.csv',xyzPos,'-append','delimiter',' ');
-% Read in the angles from the CSV file and plot them
-xTpos = xyzPos(:,1); %dlmread('armPos.csv',' ',[0 3 15 3]);
-yTpos = xyzPos(:,2); %dlmread('armPos.csv',' ',[0 4 15 4]);
-zTpos = xyzPos(:,3); %dlmread('armPos.csv',' ',[0 5 15 5]);
 
-pathPlot(xTpos, yTpos, zTpos);
-catch
-    warning('error in plotting tip position on 3d plot');
-end
+%% Clean up and do final plotting 
+dlmwrite(csv, plotValues, '-append');    
+% Read in the angles from the matrix and plot them
+pathPlot(xyzPos(:,1), xyzPos(:,2), xyzPos(:,3));
+
 pp.shutdown()
 clear('cam');
 clear java;
