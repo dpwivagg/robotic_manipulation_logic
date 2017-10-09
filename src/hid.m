@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 60;
+runtime = 90;
 
 stateUpdate = 1;
 
@@ -86,7 +86,7 @@ while 1
                     [location(1),location(2)] = Imagefindandprocess('yellow',cam);
                     xColorValue = 16;
                 end
-                desiredSetpoints = [20 0 37; 23+location(1) location(2) 3];
+                desiredSetpoints = [20 0 37; location(1) location(2) 3];
                 pointMatrix = findTotalTrajectory(desiredSetpoints);
                 point = 1;
                 stateUpdate = 0;
@@ -97,10 +97,10 @@ while 1
                 toc
                  pointMatrix = flipud(pointMatrix);
                 point = 1;
-                state = 3;
+                stateUpdate = 0;
             case 3
                 magForceTip = sqrt(uForceTip(1)^2 + uForceTip(2)^2 + uForceTip(3)^2);
-                if(magForceTip > 1)
+                if(magForceTip > 10)
                     desiredSetpoints = [20 0 37; xColorValue -16 3];
                 else
                     desiredSetpoints = [20 0 37; xColorValue 16 3];

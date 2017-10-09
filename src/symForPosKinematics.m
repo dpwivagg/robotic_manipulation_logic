@@ -4,9 +4,6 @@
 % arm. This function takes in the angles for the base, shoulder, and elbow
 % joints and returns a 4x4 transformation matrix
 function TM = symForPosKinematics(mode)
-    % Get global link lengths
-    %linkVal = getLinkValues();
-    %q = getJointValues();
     % Define the DH parameters for the arm 
     syms t1 t2 t3 l1 l2 l3 a1
     % For link 1
