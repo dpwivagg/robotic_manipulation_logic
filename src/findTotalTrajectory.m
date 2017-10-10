@@ -5,15 +5,15 @@
 % time for the total trajectory. We will have to assume that each setpoint
 % has the same desired time unless we expand to set them individually
 
-function pointMatrix = findTotalTrajectory(points)
+function pointMatrix = findTotalTrajectory(points, time)
     % The starting position is assumed to be the first position
     lastA = points(1,:);
     pointMatrix = [];
     for k = 2:size(points, 1)
         A = points(k,:);
-        x = trajectorygen(0,4,0,0,lastA(1),A(1),0.2);
-        y = trajectorygen(0,4,0,0,lastA(2),A(2),0.2);
-        z = trajectorygen(0,4,0,0,lastA(3),A(3),0.2);
+        x = trajectorygen(0,4,0,0,lastA(1),A(1),time);
+        y = trajectorygen(0,4,0,0,lastA(2),A(2),time);
+        z = trajectorygen(0,4,0,0,lastA(3),A(3),time);
         lastA = A;
         pointMatrix = [pointMatrix; x(:,2) y(:,2), z(:,2)];
     end

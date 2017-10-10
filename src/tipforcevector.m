@@ -1,10 +1,10 @@
 %% Joint Torque to force at tip calculations
 function f = tipforcevector(torque)
 % get the global variables
-linkVal = [20 17 20];%getLinkValues();
+linkVal = getLinkValues();
 linkVal = linkVal / 100;
-q = [0 90 0];%getJointValues();
-q(3) = -(q(3) + 90);
+q = getJointValues();
+q(3) = (q(3) + 90);
 % recalcuate the jacobian
 
 % Calculate the symbolic Jacobian matrix
@@ -30,6 +30,8 @@ q2 = q(3) * (pi/180);
 % Substitute real values into symbolic Jacobian
 Jsub = subs(Ji, [t1 t2 t3 l1 l2 l3 a1], [q0 q1 q2 linkVal(1) linkVal(2) linkVal(3) pi/2]);
 
+TM_sub = subs(TM, [t1 t2 t3 l1 l2 l3 a1], [q0 q1 q2 linkVal(1) linkVal(2) linkVal(3) pi/2]);
 % torque times inversed transpose of J is force at tip
-f = double(Jsub*torque);
+f_out = double(Jsub*torque);
+f = double(TM_sub(1:3,1:3)*f_out);
 end

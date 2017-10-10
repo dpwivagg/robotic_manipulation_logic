@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 90;
+runtime = 300;
 
 stateUpdate = 1;
 
@@ -86,8 +86,8 @@ while 1
                     [location(1),location(2)] = Imagefindandprocess('yellow',cam);
                     xColorValue = 16;
                 end
-                desiredSetpoints = [20 0 37; location(1) location(2) 3];
-                pointMatrix = findTotalTrajectory(desiredSetpoints);
+                desiredSetpoints = [20 0 37; location(1) location(2) 10; location(1) location(2) 3];
+                pointMatrix = findTotalTrajectory(desiredSetpoints,0.2);
                 point = 1;
                 stateUpdate = 0;
             case 2
@@ -95,7 +95,8 @@ while 1
                 tic
                 pp.command(48, servoPacket);
                 toc
-                 pointMatrix = flipud(pointMatrix);
+                desiredSetpoints = [location(1) location(2) 6; 20 0 37];
+                pointMatrix = findTotalTrajectory(desiredSetpoints,0.3);
                 point = 1;
                 stateUpdate = 0;
             case 3
@@ -105,7 +106,7 @@ while 1
                 else
                     desiredSetpoints = [20 0 37; xColorValue 16 3];
                 end
-                pointMatrix = findTotalTrajectory(desiredSetpoints);
+                pointMatrix = findTotalTrajectory(desiredSetpoints,0.1);
                 point = 1;
                 stateUpdate = 0;
             case 4
