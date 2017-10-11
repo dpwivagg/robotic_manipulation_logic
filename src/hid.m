@@ -159,7 +159,7 @@ while 1
      
      % Plot the link in real time using transformation matrices for arm
      % positions
-     threeLinkPlot(ax,TPe,TP,uForceTip);
+     threeLinkPlot(TPe,TP,uForceTip);
         
      
      if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)

@@ -3,7 +3,7 @@
 % of a 3-DOF arm with link lengths defined below.
 
 % This function require function pCoordinate.m
-function threeLinkPlot(ax, p2, p3, forces)
+function threeLinkPlot(p2, p3, forces)
 % Get global link lengths
 linkVal = getLinkValues();
 
@@ -65,8 +65,6 @@ yzplane.y = (linkVal(1) + linkVal(2)) * cos(theta) + p1(2);
 yzplane.z = (linkVal(1) + linkVal(2)) * sin(theta) + p1(3);
 
 % Plot 
-
-%axes(ax);
 plot3(x1, y1, z1, '-b', ...
       x2, y2, z2, '-r', ...
       x3, y3, z3, '-c', ...

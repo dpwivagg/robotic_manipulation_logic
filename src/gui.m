@@ -36,21 +36,39 @@ toc
 f = figure('Visible','off','Position',[360,500,900,570]);
 
 % Construct the components
+% "Stop" button - stops the loop
 hstop   = uicontrol('Style','pushbutton',...
              'String','Stop','Position',[475,220,70,25],...
              'Callback',{@stopbutton_Callback});
-% hmesh    = uicontrol('Style','pushbutton',...
-%             'String','Mesh','Position',[315,180,70,25],...
-%             'Callback',{@meshbutton_Callback});
-% hcontour = uicontrol('Style','pushbutton',...
-%             'String','Contour','Position',[315,135,70,25],...
-%             'Callback',{@contourbutton_Callback});
+
+% Set Point fields - Allows the user to enter an [x y z] setpoint
+hsetpointX   = uicontrol('Style','edit',...
+             'String','0','Position',[132,50,70,25],...
+             'Callback',{@setpointX_Callback});
+hsetpointY   = uicontrol('Style','edit',...
+             'String','0','Position',[212,50,70,25],...
+             'Callback',{@setpointY_Callback});
+hsetpointZ   = uicontrol('Style','edit',...
+             'String','0','Position',[292,50,70,25],...
+             'Callback',{@setpointZ_Callback});
+         
+% "Go" button - Sends the robot to the setpoint specified in the set point
+% fields, defaults to [0 0 0]
+hgoToSetpoint = uicontrol('Style','pushbutton',...
+             'String','Go XYZ','Position',[212,80,70,25],...
+             'Callback',{@goToSetpoint_Callback});
+
+% "Select View" text field - describes viewController menu         
 htext    = uicontrol('Style','text',...
             'String','Select View','Position',[475,485,80,15]);
+
+% View controller drop down menu - gives the user four options to view the
+% live 3D plot: top, side, front, and isometric views
 hviewController = uicontrol('Style','popupmenu',...
             'String',{'Iso','Top','Right','Front'},...
             'Position',[475,450,100,25],...
             'Callback',{@popup_menu_Callback});
+
 % Add axes and define placement of live plot
 ax = axes('Units','pixels','Position',[50,145,400,400]);
 % Align components along their centers
@@ -87,35 +105,74 @@ q = [];
 torque = [];
 runtime = 15;
 genesis = tic;
+global sentinel state
 sentinel = 1;
-while sentinel
-    tic
-    %Process command and print the returning values
-    returnValues = pp.command(38, values);
-    toc
-    pause(0.1)
-    dlmwrite(csv, transpose(returnValues), '-append');
-    
-    % Take encoder ticks and translate to degrees
-    q(1) = 0 - (returnValues(1) / 12);
-    q(2) = (returnValues(4) / 12);
-    q(3) = -((0 - (returnValues(7) / 12))+90);
-    
-    % Calculate force vector at tip from torques at joints
-    forceTip = tipforcevector([returnValues(3); returnValues(6); returnValues(9)]);
+state = 1;
+
+while getSentinel()
+    switch state
+        % This is the "pause" state
+        case 0
+            % Do nothing
         
-    % Calculate the transformation matrix of the arm
-    TM = forPosKinematics(1);
-    
-    % Create a vector of just the tip position
-    TP = [TM(1,4);TM(2,4);TM(3,4)];
-    
-    % Create a vector of just the elbow
-     TMe = forPosKinematics(0);
-     TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
-    
-    %axes(ax);
-    threeLinkPlot(ax,TPe,TP,forceTip);
+        % Home state
+        case 1
+            tic
+            %Process command and print the returning values
+            returnValues = pp.command(38, values);
+            toc
+            pause(0.1)
+            dlmwrite(csv, transpose(returnValues), '-append');
+            % Take encoder ticks and translate to degrees
+            setJointValues(0 - (returnValues(1) / 12),...
+                          (returnValues(4) / 12),...
+                          (0 - (returnValues(7) / 12)));
+                      
+            % Calculate the transformation matrix of the arm from base frame
+            % to tip frame
+            TM = forPosKinematics(1);
+            % Calculate the transformation matrix of the arm from base frame
+            % to elbow frame
+            TMe = forPosKinematics(0);
+            
+            % Create a vector of the tip position
+            TP = [TM(1,4);TM(2,4);TM(3,4)];
+            % Create a vector of the elbow position
+            TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
+            
+            % Plot the position of the arm
+            livePlot(TPe,TP,TP);
+        
+        % Go to XYZ position set by user
+        case 2
+    end
+%     tic
+%     %Process command and print the returning values
+%     returnValues = pp.command(38, values);
+%     toc
+%     pause(0.1)
+%     dlmwrite(csv, transpose(returnValues), '-append');
+%     
+%     % Take encoder ticks and translate to degrees
+%     q(1) = 0 - (returnValues(1) / 12);
+%     q(2) = (returnValues(4) / 12);
+%     q(3) = -((0 - (returnValues(7) / 12))+90);
+%     
+%     % Calculate force vector at tip from torques at joints
+%     forceTip = tipforcevector([returnValues(3); returnValues(6); returnValues(9)]);
+%         
+%     % Calculate the transformation matrix of the arm
+%     TM = forPosKinematics(1);
+%     
+%     % Create a vector of just the tip position
+%     TP = [TM(1,4);TM(2,4);TM(3,4)];
+%     
+%     % Create a vector of just the elbow
+%      TMe = forPosKinematics(0);
+%      TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
+%     
+%     %axes(ax);
+%     threeLinkPlot(TPe,TP,forceTip);
     
     % if the total elapsed time is greater than desired, end the loop
     if(toc(genesis) > runtime) 
@@ -129,8 +186,8 @@ clear java;
 
 %  Pop-up menu callback. Read the pop-up menu Value property to
 %  determine which view is currently selected by the user and make this the
-%  current view. This callback automatically has access to 
-%  current_data because this function is nested at a lower level.
+%  current view. The view preference is updated by the setGlobalvParam
+%  function.
 function popup_menu_Callback(source, event) 
    % Determine the selected data set.
    str = source.String;
@@ -143,24 +200,42 @@ function popup_menu_Callback(source, event)
       setGlobalvParam(0,90);
    case 'Right' % User selects a right side view
       setGlobalvParam(0,0);
-   case 'Front' % User selects
+   case 'Front' % User selects a front view
       setGlobalvParam(90,0);
    end
 end
 
-% Push button callbacks. Each callback plots current_data in the
-% specified plot type.
+% Push button callback. When the user presses this button, stop the loop
+% from executing and clear java to shut down the arm.
 function stopbutton_Callback(source, event)
     % Display surf plot of the currently selected data.
-     sentinel = 0;
+    setSentinel(0);
 end
 
-% function meshbutton_Callback(source,eventdata) 
-%     % Display mesh plot of the currently selected data.
-%      mesh(current_data);
-% end
-% 
-% function contourbutton_Callback(source,eventdata) 
-%     % Display contour plot of the currently selected data.
-%      contour(current_data);
-% end
+% Text entry fields. The user can use these fields to enter an [X Y Z]
+% setpoint of their choice. When the user presses the "Go XYZ" button the
+% desired setpoints are given to the arm. 
+function setpointX_Callback(source,event) 
+    % Get the value entered by the user
+    x = get(source,'string');
+end
+
+function setpointY_Callback(source,event) 
+    % Get the value entered by the user
+    y = get(source,'string');
+end
+
+function setpointZ_Callback(source,event) 
+    % Get the value entered by the user
+    z = get(source,'string');
+end
+
+% Push button callback. The user presses the "Go XYZ" button after entering
+% an [X Y Z] setpoint. The values entered for the desired setpoint are
+% checked to make sure they are within range. If they are within range, the
+% robot is sent to the desired setpoint. Otherwise, an error message
+% appears
+function goToSetpoint_Callback(source,event) 
+    % Display contour plot of the currently selected data.
+     contour(current_data);
+end
