@@ -93,23 +93,37 @@ movegui(f,'center')
 % Make the UI visible.
 f.Visible = 'on';
 
-%% Other Stuff
-
+%% Initialize Global Variables
 % Set values for the lengths of link 1, 2, and 3
 global links vParam
 links = [20 17 20];
 vParam = [-37.5 30];
-% set global joint angle values
+
+% Create global joint angle values variable
 global q 
 q = [];
-torque = [];
-runtime = 15;
-genesis = tic;
+
+% Create and intialize while loop sentinel and state variables
 global sentinel state
 sentinel = 1;
 state = 1;
 
+% Create global variables to hold user input setpoints
+global userSetpointX userSetpointY userSetpointZ
+userSetpointX = 0;
+userSetpointY = 0;
+userSetpointZ = 0;
+
+torque = [];
+runtime = 15;
+genesis = tic;
+%% State Machine
 while getSentinel()
+    tic
+    %Process command and print the returning values
+    returnValues = pp.command(38, values);
+    toc
+    
     switch state
         % This is the "pause" state
         case 0
@@ -117,10 +131,6 @@ while getSentinel()
         
         % Home state
         case 1
-            tic
-            %Process command and print the returning values
-            returnValues = pp.command(38, values);
-            toc
             pause(0.1)
             dlmwrite(csv, transpose(returnValues), '-append');
             % Take encoder ticks and translate to degrees
@@ -145,6 +155,14 @@ while getSentinel()
         
         % Go to XYZ position set by user
         case 2
+            newSetpoint = invPosKinematics([getUserSetpointX,getUserSetpointY,getUserSetpointZ]);
+            values(1) = newSetpoint(1) * 12;
+            values(4) = newSetpoint(2) * 12;
+            values(7) = newSetpoint(3) * 12;
+            
+            if(returnValues(10) == 1 && returnValues(11) == 1 && returnValues(12) == 1)
+                setState(1);
+            end
     end
 %     tic
 %     %Process command and print the returning values
@@ -181,6 +199,7 @@ while getSentinel()
 end
 
 pp.shutdown()
+clear('cam');
 clear java;
 
 
@@ -217,17 +236,17 @@ end
 % desired setpoints are given to the arm. 
 function setpointX_Callback(source,event) 
     % Get the value entered by the user
-    x = get(source,'string');
+    setUserSetpointX(get(source,'string'));
 end
 
 function setpointY_Callback(source,event) 
     % Get the value entered by the user
-    y = get(source,'string');
+    setUserSetpointY(get(source,'string'));
 end
 
 function setpointZ_Callback(source,event) 
     % Get the value entered by the user
-    z = get(source,'string');
+    setUserSetpointZ(get(source,'string'));
 end
 
 % Push button callback. The user presses the "Go XYZ" button after entering
@@ -237,5 +256,5 @@ end
 % appears
 function goToSetpoint_Callback(source,event) 
     % Display contour plot of the currently selected data.
-     contour(current_data);
+    setState(2);
 end
