@@ -42,9 +42,9 @@ yS2 = [p2(2) p3(2)];
 zS2 = [p0(3) p0(3)];
 
 % Force vector at tip in direction of force
-xF = [p3(1) (p3(1)+forces(1))];
-yF = [p3(2) (p3(2)+forces(2))];
-zF = [p3(3) -(p3(3)-forces(3))];
+xF = [p3(1) (forces(1))];
+yF = [p3(2) (forces(2))];
+zF = [p3(3) (forces(3))];
 
 % Create a circle showing the range of the arm
 theta = 0:pi/50:2*pi;
