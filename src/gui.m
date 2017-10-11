@@ -141,7 +141,7 @@ while getSentinel()
             TPe = [TMe(1,4);TMe(2,4);TMe(3,4)];
             
             % Plot the position of the arm
-            livePlot(TPe,TP,TP);
+            livePlot(ax,TPe,TP,TP);
         
         % Go to XYZ position set by user
         case 2

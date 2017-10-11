@@ -1,9 +1,12 @@
 % This function takes in the cartesian coordinates of the arm elbow and tip
 % along with the taskspace forces at the tip and produces a live 3D plot
-function livePlot(p2, p3, forces)
+function livePlot(ax, p2, p3, forces)
     % Update global parameters
     linkVal = getLinkValues();
     viewAzEl = getGlobalvParam();
+    
+    % Clear axes
+    cla(ax);
     
     % Origin point, 3x1
     p0 = [0; 0; 0];
