@@ -6,6 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.lang.*;
 
+% example of how to add path:
+% addpath /FolerName
+
 %% Set up variables and file names
 runtime = 30;
 
