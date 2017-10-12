@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 100;
+runtime = 40;
 
 stateUpdate = 1;
 
@@ -54,7 +54,7 @@ tic
 pp.command(48, servoPacket);
 toc
 
-desiredSetpoints = [20 0 37; 15 5 3; 25 10 10; 20 -10 20; 17 15 15; 15 10 30; 20 5 10; 15 -5 10; 37 0 20; 30 5 20];
+desiredSetpoints = [20 0 37; 15 5 3; 25 10 10];% 20 -10 20; 17 15 15; 15 10 10; 20 5 10; 15 -5 10; 37 0 20; 30 5 20];
 
 
 %% Initial values for position command
@@ -65,10 +65,11 @@ values = zeros(15, 1, 'single');
 % Position joint 2 ranges from -330 to 2400
 
 %% Begin program loop
-
+timep = [];
 point = 1;
 genesis = tic;
-
+uForceTipa = [];
+magforce=[];
 state = 1;
 % State 1: Find objects and travel to one
 % State 2: Pick up an object and travel to weighing position
@@ -77,7 +78,7 @@ state = 1;
 
 flag = 0;
 while 1
-     for i = 1:9
+     for i = 1:2
          flag = 0;
          pointMatrix = findTotalTrajectory([desiredSetpoints(i,:);desiredSetpoints((i+1),:)],0.2);
          while(flag == 0)
@@ -96,7 +97,9 @@ while 1
 
              % Determine the force vector at the tip
              uForceTip = tipforcevector([returnValues(3); returnValues(6); returnValues(9)]);
-
+             uForceTipa = [uForceTipa; uForceTip(1), uForceTip(2), uForceTip(3)];
+             magforce =[magforce; sqrt(uForceTip(1)^2+uForceTip(2)^2+uForceTip(3)^2)];
+             timep = [timep; toc];
              % Clear the live link plot
              clf;
 
@@ -130,19 +133,29 @@ while 1
                  end
              end
 
-             % if the total elapsed time is greater than desired, end the loop
+         end
+         
+     end
+      % if the total elapsed time is greater than desired, end the loop
              if(toc(genesis) > runtime) 
                  break;
              end
-         end
-     end
 end
 
 %% Clean up and do final plotting 
 dlmwrite(csv, plotValues, '-append');    
 % Read in the angles from the matrix and plot them
 % pathPlot(xyzPos(:,1), xyzPos(:,2), xyzPos(:,3));
-
+% subplot(3,1,1);
+% plot(timep,xyzPos(:,1),'-r',timep,xyzPos(:,2),'-b',timep,xyzPos(:,1),'-g')
+% grid on;
+% subplot(3,1,2);
+uForceTipa = transpose(uForceTipa);
+plot(timep,uForceTipa(1,:),'-r',timep,uForceTipa(2,:),'-b',timep,uForceTipa(3,:),'-g')
+% grid on;
+% subplot(3,1,3);
+% plot(timep,magforce)
+grid on;
 pp.shutdown()
 clear('cam');
 clear java;

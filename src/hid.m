@@ -10,7 +10,7 @@ import java.lang.*;
 % addpath /FolerName
 
 %% Set up variables and file names
-runtime = 30;
+runtime = 500;
 
 stateUpdate = 1;
 
