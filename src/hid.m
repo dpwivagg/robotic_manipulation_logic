@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.lang.*;
 
 %% Set up variables and file names
-runtime = 50;
+runtime = 30;
 
 stateUpdate = 1;
 
