@@ -1,5 +1,5 @@
-# RBE3001 Matlab Template
-This is template code for talking to the Default firmware
+# RBE3001 Matlab Logic
+This code was used to communicate between the master logic and the firmware on the Nucleo development board. Setup instructions below.
 
 ## Configure git
 ```
