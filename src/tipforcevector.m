@@ -1,9 +1,9 @@
 %% Joint Torque to force at tip calculations
 function f = tipforcevector(torque)
 % get the global variables
-linkVal = getLinkValues();
+linkVal = [20 17 20];%getLinkValues();
 linkVal = linkVal / 100;
-q = getJointValues();
+q = [14; 15; 16];%getJointValues();
 q(3) = -(q(3) + 90);
 
 % recalcuate the jacobian
@@ -14,10 +14,14 @@ q(3) = -(q(3) + 90);
 %               sin(symq0) * (syml2 * cos(symq1) + syml3 * cos(symq1 - symq2));...
 %               syml1 + (syml2 * sin(symq1)) + (syml3 * sin(symq1 - symq2))],[symq0 symq1 symq2]);
 syms t1 t2 t3 l1 l2 l3 a1
-TM = symForPosKinematics(1);
-J = [diff(TM(1,4),t1), diff(TM(1,4),t2), diff(TM(1,4),t3);...
+TM = simplify(symForPosKinematics(1));
+
+sub1 = simplify(subs(TM, a1, pi/2))
+J = simplify([diff(TM(1,4),t1), diff(TM(1,4),t2), diff(TM(1,4),t3);...
      diff(TM(2,4),t1), diff(TM(2,4),t2), diff(TM(2,4),t3);...
-     diff(TM(3,4),t1), diff(TM(3,4),t2), diff(TM(3,4),t3)];
+     diff(TM(3,4),t1), diff(TM(3,4),t2), diff(TM(3,4),t3)]);
+ 
+sub = simplify(subs(J, a1, pi/2))
 
 % get the transpose then the inverse
 Jt = transpose(J);
